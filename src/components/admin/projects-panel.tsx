@@ -120,7 +120,7 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
 
     if (!response.ok) {
       setInvoiceState("error");
-      setInvoiceMessage(payload?.error ?? "Could not create Stripe invoice.");
+      setInvoiceMessage(payload?.error ?? `Could not create Stripe invoice (${response.status}).`);
       return;
     }
 
