@@ -8,7 +8,9 @@
 
 ## Stripe
 - Webhook endpoint: `POST /api/stripe/webhook`
-- Handles core payment and invoice event types.
+- Handles `invoice.paid`, `invoice.payment_failed`, `payment_intent.succeeded`, and `payment_intent.payment_failed`
+- Updates matching Supabase `invoices` / `payments` rows (matched by Stripe ids or metadata)
+- Create invoice from admin: `POST /api/dashboard/invoices` (creates Stripe invoice + local row)
 
 ## Cloudflare R2
 - Signed upload URL endpoint: `POST /api/r2/sign`

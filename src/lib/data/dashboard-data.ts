@@ -89,6 +89,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     amountUsd: Number(row.amount_usd ?? 0),
     status: row.status,
     dueDate: row.due_date ?? "",
+    stripeInvoiceId: row.stripe_invoice_id ?? null,
   }));
 
   const payments = paymentsResult.data.map((row) => ({

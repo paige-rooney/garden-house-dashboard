@@ -15,6 +15,9 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
   const [projectId, setProjectId] = useState<string>("");
   const [projectNotes, setProjectNotes] = useState("");
   const [formState, setFormState] = useState<"idle" | "saving" | "error">("idle");
+  const [invoiceAmount, setInvoiceAmount] = useState("");
+  const [invoiceState, setInvoiceState] = useState<"idle" | "creating" | "sent" | "error">("idle");
+  const [invoiceMessage, setInvoiceMessage] = useState("");
   const [newProject, setNewProject] = useState({
     title: "",
     songCount: 1,
@@ -88,6 +91,47 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
     }
     await onDataChanged();
     setFormState("idle");
+  }
+
+  async function createStripeInvoice() {
+    if (!selectedProject) return;
+    const amountUsd = Number(invoiceAmount);
+    if (!Number.isFinite(amountUsd) || amountUsd <= 0) {
+      setInvoiceState("error");
+      setInvoiceMessage("Enter a valid invoice amount.");
+      return;
+    }
+
+    setInvoiceState("creating");
+    setInvoiceMessage("");
+    const response = await fetch("/api/dashboard/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectId: selectedProject.id,
+        amountUsd,
+        description: `${selectedProject.title} — Garden House session`,
+      }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as
+      | { error?: string; hostedInvoiceUrl?: string | null }
+      | null;
+
+    if (!response.ok) {
+      setInvoiceState("error");
+      setInvoiceMessage(payload?.error ?? "Could not create Stripe invoice.");
+      return;
+    }
+
+    setInvoiceAmount("");
+    setInvoiceState("sent");
+    setInvoiceMessage(
+      payload?.hostedInvoiceUrl
+        ? "Stripe invoice created and emailed to the client."
+        : "Stripe invoice created.",
+    );
+    await onDataChanged();
   }
 
   return (
@@ -208,13 +252,43 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
             </p>
             <div>
               <p className="mb-1 font-semibold">Invoicing</p>
-              <ul className="space-y-1">
+              <ul className="mb-3 space-y-1">
+                {projectInvoices.length === 0 && (
+                  <li className="text-xs text-brand-muted">No invoices for this project yet.</li>
+                )}
                 {projectInvoices.map((invoice) => (
                   <li key={invoice.id} className="rounded border border-brand-green/20 px-2 py-1 text-xs">
-                    {invoice.id}: ${invoice.amountUsd} ({invoice.status})
+                    ${invoice.amountUsd} — {invoice.status}
+                    {invoice.stripeInvoiceId ? ` (${invoice.stripeInvoiceId})` : ""}
                   </li>
                 ))}
               </ul>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  placeholder="Amount USD"
+                  value={invoiceAmount}
+                  onChange={(event) => setInvoiceAmount(event.target.value)}
+                  className="w-32 rounded-lg border border-brand-green/20 px-2 py-1 text-xs"
+                />
+                <button
+                  type="button"
+                  className="rounded bg-brand-green px-3 py-1 text-xs text-white disabled:opacity-60"
+                  disabled={invoiceState === "creating"}
+                  onClick={createStripeInvoice}
+                >
+                  {invoiceState === "creating" ? "Creating..." : "Create Stripe invoice"}
+                </button>
+              </div>
+              {invoiceMessage && (
+                <p
+                  className={`mt-2 text-xs ${invoiceState === "error" ? "text-red-600" : "text-brand-green"}`}
+                >
+                  {invoiceMessage}
+                </p>
+              )}
             </div>
             <p className="font-semibold">Notes</p>
             <textarea

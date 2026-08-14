@@ -107,3 +107,11 @@ create index if not exists idx_projects_client_id on projects(client_id);
 create index if not exists idx_invoices_project_id on invoices(project_id);
 create index if not exists idx_payments_invoice_id on payments(invoice_id);
 create index if not exists idx_events_date on events(date);
+
+create unique index if not exists idx_invoices_stripe_invoice_id
+  on invoices (stripe_invoice_id)
+  where stripe_invoice_id is not null;
+
+create unique index if not exists idx_payments_stripe_payment_intent_id
+  on payments (stripe_payment_intent_id)
+  where stripe_payment_intent_id is not null;

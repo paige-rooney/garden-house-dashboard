@@ -130,6 +130,16 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_events_date') THEN
     CREATE INDEX idx_events_date ON public.events("date");
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_invoices_stripe_invoice_id') THEN
+    CREATE UNIQUE INDEX idx_invoices_stripe_invoice_id
+      ON public.invoices (stripe_invoice_id)
+      WHERE stripe_invoice_id IS NOT NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_payments_stripe_payment_intent_id') THEN
+    CREATE UNIQUE INDEX idx_payments_stripe_payment_intent_id
+      ON public.payments (stripe_payment_intent_id)
+      WHERE stripe_payment_intent_id IS NOT NULL;
+  END IF;
 END
 $$;
 

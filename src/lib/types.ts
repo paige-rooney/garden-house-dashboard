@@ -32,6 +32,7 @@ export type Invoice = {
   amountUsd: number;
   status: InvoiceStatus;
   dueDate: string;
+  stripeInvoiceId?: string | null;
 };
 
 export type PaymentStatus = "paid" | "pending" | "failed";
