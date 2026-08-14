@@ -3,12 +3,38 @@ import { z } from "zod";
 import { getStripeClient } from "@/lib/integrations/stripe";
 import { getSupabaseServiceClient } from "@/lib/integrations/supabase";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const createInvoiceSchema = z.object({
   projectId: z.string().uuid(),
   amountUsd: z.number().positive(),
   dueDate: z.string().optional(),
   description: z.string().optional(),
 });
+
+export async function GET() {
+  const stripe = getStripeClient();
+  const supabase = getSupabaseServiceClient();
+
+  let stripeOk = false;
+  let stripeError: string | null = null;
+  if (stripe) {
+    try {
+      await stripe.customers.list({ limit: 1 });
+      stripeOk = true;
+    } catch (error) {
+      stripeError = error instanceof Error ? error.message : "Stripe request failed";
+    }
+  }
+
+  return NextResponse.json({
+    stripeConfigured: Boolean(stripe),
+    stripeOk,
+    stripeError,
+    supabaseConfigured: Boolean(supabase),
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +43,10 @@ export async function POST(request: NextRequest) {
 
     if (!stripe) {
       return NextResponse.json(
-        { error: "Stripe is not configured. Add STRIPE_SECRET_KEY in Vercel env vars and redeploy." },
+        {
+          error:
+            "Stripe is not configured. Add STRIPE_SECRET_KEY in Vercel → Settings → Environment Variables (Production), then Redeploy.",
+        },
         { status: 400 },
       );
     }
@@ -28,7 +57,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const parsed = createInvoiceSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid payload. Use a valid project and amount greater than 0." },
+        { status: 400 },
+      );
     }
 
     const { data: project, error: projectError } = await supabase
@@ -38,7 +70,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (projectError) {
-      return NextResponse.json({ error: projectError.message }, { status: 500 });
+      return NextResponse.json({ error: `Supabase project lookup: ${projectError.message}` }, { status: 500 });
     }
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -51,10 +83,13 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (clientError) {
-      return NextResponse.json({ error: clientError.message }, { status: 500 });
+      return NextResponse.json({ error: `Supabase client lookup: ${clientError.message}` }, { status: 500 });
     }
     if (!client?.email) {
-      return NextResponse.json({ error: "Project client email is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "This project’s client needs an email in Client CRM before invoicing." },
+        { status: 400 },
+      );
     }
 
     const customers = await stripe.customers.list({ email: client.email, limit: 1 });
@@ -67,15 +102,12 @@ export async function POST(request: NextRequest) {
       }));
 
     const amountCents = Math.round(parsed.data.amountUsd * 100);
+    if (amountCents < 50) {
+      return NextResponse.json({ error: "Stripe requires at least $0.50 USD." }, { status: 400 });
+    }
+
     const description =
       parsed.data.description?.trim() || `Garden House — ${project.title}`;
-
-    await stripe.invoiceItems.create({
-      customer: customer.id,
-      amount: amountCents,
-      currency: "usd",
-      description,
-    });
 
     const stripeInvoice = await stripe.invoices.create({
       customer: customer.id,
@@ -92,6 +124,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Stripe did not return an invoice id" }, { status: 500 });
     }
 
+    await stripe.invoiceItems.create({
+      customer: customer.id,
+      invoice: stripeInvoice.id,
+      amount: amountCents,
+      currency: "usd",
+      description,
+    });
+
     const finalized = await stripe.invoices.finalizeInvoice(stripeInvoice.id);
     if (!finalized.id) {
       return NextResponse.json({ error: "Stripe finalize did not return an invoice id" }, { status: 500 });
@@ -102,7 +142,6 @@ export async function POST(request: NextRequest) {
       const sent = await stripe.invoices.sendInvoice(finalized.id);
       hostedInvoiceUrl = sent.hosted_invoice_url ?? hostedInvoiceUrl;
     } catch (sendError) {
-      // Test mode can still create/finalize even if email send is restricted.
       console.error("Stripe sendInvoice warning:", sendError);
     }
 
@@ -130,7 +169,7 @@ export async function POST(request: NextRequest) {
         {
           error:
             insertError?.message ??
-            "Stripe invoice created, but saving to Supabase failed. Run supabase/stripe_indexes.sql if needed.",
+            "Stripe invoice was created, but saving to Supabase failed.",
           stripeInvoiceId: finalized.id,
           hostedInvoiceUrl,
         },

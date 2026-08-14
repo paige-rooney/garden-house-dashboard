@@ -104,34 +104,46 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
 
     setInvoiceState("creating");
     setInvoiceMessage("");
-    const response = await fetch("/api/dashboard/invoices", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        projectId: selectedProject.id,
-        amountUsd,
-        description: `${selectedProject.title} — Garden House session`,
-      }),
-    });
+    try {
+      const response = await fetch("/api/dashboard/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId: selectedProject.id,
+          amountUsd,
+          description: `${selectedProject.title} — Garden House session`,
+        }),
+      });
 
-    const payload = (await response.json().catch(() => null)) as
-      | { error?: string; hostedInvoiceUrl?: string | null }
-      | null;
+      const raw = await response.text();
+      let payload: { error?: string; hostedInvoiceUrl?: string | null } | null = null;
+      try {
+        payload = raw ? (JSON.parse(raw) as { error?: string; hostedInvoiceUrl?: string | null }) : null;
+      } catch {
+        payload = null;
+      }
 
-    if (!response.ok) {
+      if (!response.ok) {
+        setInvoiceState("error");
+        setInvoiceMessage(
+          payload?.error ||
+            (raw ? raw.slice(0, 200) : `Could not create Stripe invoice (HTTP ${response.status}).`),
+        );
+        return;
+      }
+
+      setInvoiceAmount("");
+      setInvoiceState("sent");
+      setInvoiceMessage(
+        payload?.hostedInvoiceUrl
+          ? "Stripe invoice created and emailed to the client."
+          : "Stripe invoice created.",
+      );
+      await onDataChanged();
+    } catch (error) {
       setInvoiceState("error");
-      setInvoiceMessage(payload?.error ?? `Could not create Stripe invoice (${response.status}).`);
-      return;
+      setInvoiceMessage(error instanceof Error ? error.message : "Network error creating invoice.");
     }
-
-    setInvoiceAmount("");
-    setInvoiceState("sent");
-    setInvoiceMessage(
-      payload?.hostedInvoiceUrl
-        ? "Stripe invoice created and emailed to the client."
-        : "Stripe invoice created.",
-    );
-    await onDataChanged();
   }
 
   return (
