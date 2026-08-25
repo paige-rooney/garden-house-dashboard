@@ -1,6 +1,5 @@
 import {
   Client,
-  DashboardData,
   EventItem,
   Invoice,
   Payment,
@@ -194,18 +193,5 @@ export const payments: Payment[] = [
 ];
 
 export const revenue: RevenuePoint[] = [
-  { month: "Jan", monthly: 4200, quarterly: 4200, ytd: 4200, oneYear: 4200, fiveYear: 4200 },
-  { month: "Feb", monthly: 5300, quarterly: 9500, ytd: 9500, oneYear: 9500, fiveYear: 9500 },
-  { month: "Mar", monthly: 6100, quarterly: 15600, ytd: 15600, oneYear: 15600, fiveYear: 15600 },
-  { month: "Apr", monthly: 4700, quarterly: 16100, ytd: 20300, oneYear: 20300, fiveYear: 20300 },
-  { month: "May", monthly: 5800, quarterly: 16600, ytd: 26100, oneYear: 26100, fiveYear: 26100 },
+  { month: "Jan", monthly: 0, quarterly: 0, ytd: 0, oneYear: 0, fiveYear: 0 },
 ];
-
-export const dashboardDemoData: DashboardData = {
-  clients,
-  projects,
-  invoices,
-  payments,
-  events,
-  revenue,
-};

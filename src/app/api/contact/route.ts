@@ -1,40 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sendTransactionalEmail } from "@/lib/email/send";
 import { env } from "@/lib/env";
-import { getResendClient } from "@/lib/integrations/resend";
 import { contactFormSchema } from "@/lib/validators/forms";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { clientIp } from "@/lib/http";
+import { jsonError } from "@/lib/http";
 
 export async function POST(request: NextRequest) {
-  const raw = await request.json().catch(() => ({}));
-  const parsed = contactFormSchema.safeParse(raw);
+  try {
+    await enforceRateLimit({ key: `contact:${clientIp(request)}`, limit: 8, windowMs: 15 * 60_000 });
+    const parsed = contactFormSchema.safeParse(await request.json().catch(() => ({})));
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Please complete the required fields." }, { status: 400 });
+    }
 
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+    const to = env.RESEND_CONTACT_TO ?? env.RESEND_EVENTS_LIST;
+    if (!to) {
+      return NextResponse.json({ error: "The studio mailbox is not configured yet." }, { status: 503 });
+    }
+
+    const result = await sendTransactionalEmail({
+      templateKey: "contact_form",
+      to: [to],
+      subject: `New contact form: ${parsed.data.firstName} ${parsed.data.lastName}`,
+      text: [
+        `Name: ${parsed.data.firstName} ${parsed.data.lastName}`,
+        `Email: ${parsed.data.email}`,
+        `Instagram: ${parsed.data.instagram ?? "N/A"}`,
+        `Location: ${parsed.data.location ?? "N/A"}`,
+        `Message: ${parsed.data.message}`,
+      ].join("\n"),
+      dedupeKey: `contact:${parsed.data.email}:${parsed.data.message.slice(0, 40)}`,
+    });
+
+    if (!result.ok) {
+      return NextResponse.json({ error: "Could not send that message right now." }, { status: 502 });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return jsonError(error);
   }
-
-  const resend = getResendClient();
-  if (!resend || !env.RESEND_FROM) {
-    return NextResponse.json({ ok: true, demo: true });
-  }
-
-  const to =
-    env.RESEND_CONTACT_TO ?? env.RESEND_EVENTS_LIST ?? "hello@gardenhouserecordingstudios.com";
-
-  const { error } = await resend.emails.send({
-    from: env.RESEND_FROM,
-    to: [to],
-    subject: `New contact form: ${parsed.data.firstName} ${parsed.data.lastName}`,
-    text: [
-      `Name: ${parsed.data.firstName} ${parsed.data.lastName}`,
-      `Email: ${parsed.data.email}`,
-      `Instagram: ${parsed.data.instagram ?? "N/A"}`,
-      `Location: ${parsed.data.location ?? "N/A"}`,
-      `Message: ${parsed.data.message}`,
-    ].join("\n"),
-  });
-
-  if (error) {
-    return NextResponse.json({ error: error.message, demo: false }, { status: 502 });
-  }
-
-  return NextResponse.json({ ok: true, demo: false });
 }

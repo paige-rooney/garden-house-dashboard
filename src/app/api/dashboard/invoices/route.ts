@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { requireStaff } from "@/lib/auth/staff";
+import { jsonError } from "@/lib/http";
 import { getStripeClient } from "@/lib/integrations/stripe";
 import { getSupabaseServiceClient } from "@/lib/integrations/supabase";
+import { writeAudit } from "@/lib/security/audit";
+import { createInvoiceSchema } from "@/lib/validators/forms";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const createInvoiceSchema = z.object({
-  projectId: z.string().uuid(),
-  amountUsd: z.number().positive(),
-  dueDate: z.string().optional(),
-  description: z.string().optional(),
-});
-
-export async function GET() {
+export async function GET(request: NextRequest) {
+  try {
+    await requireStaff(request, { minRole: "admin" });
+  } catch (error) {
+    return jsonError(error);
+  }
   const stripe = getStripeClient();
   const supabase = getSupabaseServiceClient();
 
@@ -38,6 +39,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const { staff } = await requireStaff(request, { minRole: "admin" });
     const stripe = getStripeClient();
     const supabase = getSupabaseServiceClient();
 
@@ -45,7 +47,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Stripe is not configured. Add STRIPE_SECRET_KEY in Vercel → Settings → Environment Variables (Production), then Redeploy.",
+            "Stripe test mode is not connected yet. Add the Stripe secret key in hosting settings, then try again. Live charges are disabled until you approve them.",
         },
         { status: 400 },
       );
@@ -160,6 +162,9 @@ export async function POST(request: NextRequest) {
         amount_usd: parsed.data.amountUsd,
         status: "due",
         due_date: dueDate,
+        hosted_invoice_url: hostedInvoiceUrl,
+        payment_terms: parsed.data.paymentTerms ?? "Net 14",
+        description,
       })
       .select("id")
       .single();
@@ -177,6 +182,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    await writeAudit({
+      actorId: staff.id,
+      actorEmail: staff.email,
+      action: "invoice.create",
+      entityType: "invoice",
+      entityId: localInvoice.id,
+      metadata: { stripeInvoiceId: finalized.id },
+    });
+
     return NextResponse.json({
       ok: true,
       invoiceId: localInvoice.id,
@@ -184,8 +198,6 @@ export async function POST(request: NextRequest) {
       hostedInvoiceUrl,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Invoice creation failed";
-    console.error("Create invoice error:", error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return jsonError(error);
   }
 }

@@ -1,28 +1,20 @@
 import { NextResponse } from "next/server";
-import { getSupabaseServiceClient } from "@/lib/integrations/supabase";
 import { env } from "@/lib/env";
+import { requireStaff } from "@/lib/auth/staff";
+import { jsonError } from "@/lib/http";
+import { getSupabaseServiceClient } from "@/lib/supabase/admin";
 
-export async function GET() {
-  const supabase = getSupabaseServiceClient();
-  if (!supabase) {
-    return NextResponse.json({ ok: false, error: "Supabase not configured" }, { status: 400 });
+export async function GET(request: Request) {
+  try {
+    if (!env.ALLOW_DEBUG_ENDPOINTS) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    await requireStaff(request, { minRole: "owner" });
+    const supabase = getSupabaseServiceClient();
+    if (!supabase) return NextResponse.json({ ok: false, error: "Database unavailable" }, { status: 503 });
+    const { error, count } = await supabase.from("clients").select("id", { head: true, count: "exact" });
+    return NextResponse.json({ ok: !error, clients: count ?? 0, error: error?.message ?? null });
+  } catch (error) {
+    return jsonError(error);
   }
-
-  const checks = await Promise.all([
-    supabase.from("clients").select("id", { head: true, count: "exact" }),
-    supabase.from("projects").select("id", { head: true, count: "exact" }),
-    supabase.from("invoices").select("id", { head: true, count: "exact" }),
-    supabase.from("events").select("id", { head: true, count: "exact" }),
-  ]);
-
-  return NextResponse.json({
-    ok: true,
-    supabaseUrl: env.SUPABASE_URL,
-    results: {
-      clients: { error: checks[0].error?.message ?? null, count: checks[0].count ?? null },
-      projects: { error: checks[1].error?.message ?? null, count: checks[1].count ?? null },
-      invoices: { error: checks[2].error?.message ?? null, count: checks[2].count ?? null },
-      events: { error: checks[3].error?.message ?? null, count: checks[3].count ?? null },
-    },
-  });
 }

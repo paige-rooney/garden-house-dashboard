@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { TopNav } from "@/components/marketing/top-nav";
-import { events } from "@/lib/demo-data";
 import { EventItem } from "@/lib/types";
 
 export default function EventsPage() {
   const [window, setWindow] = useState<"month" | "threeMonths">("month");
-  const [list, setList] = useState<EventItem[]>(events);
+  const [list, setList] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [recipientGroup, setRecipientGroup] = useState("all-events");
   const [state, setState] = useState("idle");
@@ -20,6 +20,7 @@ export default function EventsPage() {
       if (!response.ok || cancelled) return;
       const payload = (await response.json()) as { events: EventItem[] };
       if (!cancelled && Array.isArray(payload.events)) setList(payload.events);
+      if (!cancelled) setLoading(false);
     }
 
     void load();
@@ -60,6 +61,10 @@ export default function EventsPage() {
             </button>
           </div>
           <ul className="mt-4 grid gap-3">
+            {loading && <li className="text-sm text-brand-muted">Loading upcoming events…</li>}
+            {!loading && list.length === 0 && (
+              <li className="text-sm text-brand-muted">No public events are scheduled in this window yet.</li>
+            )}
             {list.map((event) => (
               <li key={event.id} className="rounded-lg border border-brand-green/20 p-3">
                 <p className="font-medium">{event.title}</p>

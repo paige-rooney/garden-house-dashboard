@@ -1,63 +1,83 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { DashboardData } from "@/lib/types";
 
-const templates = [
-  "Single Song Production Agreement",
-  "EP Production + Mixing Agreement",
-  "Cowrite Collaboration Agreement",
-];
+type Props = {
+  data: DashboardData;
+  onDataChanged: () => Promise<void>;
+};
 
-export function ContractsPanel() {
-  const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
-  const [projectId, setProjectId] = useState("p1");
-  const [status, setStatus] = useState("idle");
+export function ContractsPanel({ data, onDataChanged }: Props) {
+  const { templates, projects, contracts, clients } = data;
+  const [templateId, setTemplateId] = useState(templates[0]?.id ?? "");
+  const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [message, setMessage] = useState("");
 
   async function sendContract() {
     setStatus("sending");
     const response = await fetch("/api/contracts/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ template: selectedTemplate, projectId }),
+      body: JSON.stringify({ templateId, projectId }),
     });
-    setStatus(response.ok ? "sent" : "error");
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setStatus("error");
+      setMessage(payload.error || "Could not send.");
+      return;
+    }
+    setStatus("sent");
+    setMessage(
+      payload.signUrl
+        ? `Sent. Test signing link: ${payload.signUrl}`
+        : "Sent to the client email on file.",
+    );
+    await onDataChanged();
   }
 
   return (
-    <div className="rounded-2xl bg-brand-surface p-4 shadow-soft">
-      <h3 className="mb-3 font-semibold">Contracts</h3>
-      <p className="mb-3 text-sm text-brand-muted">
-        Use a pre-built template, customize project details, add drag-and-drop signature/date
-        fields, then send to the client.
-      </p>
-      <label className="mb-2 block text-sm font-medium">Template</label>
-      <select
-        value={selectedTemplate}
-        onChange={(e) => setSelectedTemplate(e.target.value)}
-        className="mb-3 w-full rounded-lg border border-brand-green/20 px-3 py-2"
-      >
-        {templates.map((template) => (
-          <option key={template} value={template}>
-            {template}
-          </option>
-        ))}
-      </select>
-      <label className="mb-2 block text-sm font-medium">Project ID</label>
-      <input
-        value={projectId}
-        onChange={(e) => setProjectId(e.target.value)}
-        className="mb-3 w-full rounded-lg border border-brand-green/20 px-3 py-2"
-      />
-      <div className="rounded-lg border border-dashed border-brand-green/30 p-3 text-sm">
-        Signature fields: [Client Signature] [Date Signed] [Studio Signature]
+    <div className="grid gap-4 lg:grid-cols-2">
+      <div className="rounded-2xl bg-brand-surface p-4 shadow-soft">
+        <h3 className="mb-2 font-semibold">Send a contract</h3>
+        <p className="mb-3 text-sm text-brand-muted">
+          Templates merge client and project details, then email the CRM address. This is an
+          operational draft — have an attorney review language before relying on it legally.
+        </p>
+        <label className="text-sm font-medium">Template</label>
+        <select className="mb-3 mt-1 w-full rounded-lg border border-brand-green/20 px-3 py-2" value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
+          {templates.map((template) => (
+            <option key={template.id} value={template.id}>{template.name}</option>
+          ))}
+        </select>
+        <label className="text-sm font-medium">Project</label>
+        <select className="mb-3 mt-1 w-full rounded-lg border border-brand-green/20 px-3 py-2" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+          {projects.map((project) => {
+            const client = clients.find((item) => item.id === project.clientId);
+            return (
+              <option key={project.id} value={project.id}>
+                {project.title} {client ? `(${client.name})` : ""}
+              </option>
+            );
+          })}
+        </select>
+        <button className="rounded bg-brand-green px-4 py-2 text-sm text-white" onClick={() => void sendContract()} disabled={!templateId || !projectId}>
+          {status === "sending" ? "Sending..." : "Send to client email"}
+        </button>
+        {message && <p className={`mt-3 text-sm ${status === "error" ? "text-red-600" : "text-brand-green"}`}>{message}</p>}
       </div>
-      <div className="mt-3 flex items-center gap-3">
-        <Button type="button" onClick={sendContract}>
-          Send to client email
-        </Button>
-        {status === "sent" && <span className="text-sm text-brand-green">Sent.</span>}
-        {status === "error" && <span className="text-sm text-red-600">Failed to send.</span>}
+      <div className="rounded-2xl bg-brand-surface p-4 shadow-soft">
+        <h3 className="mb-3 font-semibold">Contract activity</h3>
+        {contracts.length === 0 && <p className="text-sm text-brand-muted">No contracts yet.</p>}
+        <ul className="space-y-2 text-sm">
+          {contracts.map((contract) => (
+            <li key={contract.id} className="rounded-lg border border-brand-green/20 p-3">
+              <p className="font-medium">{contract.title}</p>
+              <p className="text-xs text-brand-muted">{contract.status} · {contract.sentTo || "not sent"}</p>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { DashboardData } from "@/lib/types";
+import { FileUploader } from "@/components/admin/file-uploader";
+import { DashboardData, ProjectStatus } from "@/lib/types";
 
 type Props = {
   data: DashboardData;
@@ -9,11 +10,10 @@ type Props = {
 };
 
 export function ProjectsPanel({ data, onDataChanged }: Props) {
-  const { clients, invoices, projects } = data;
+  const { clients, invoices, projects, files, contracts } = data;
   const [status, setStatus] = useState<"active" | "inactive">("active");
-  const [clientId, setClientId] = useState<string>("");
-  const [projectId, setProjectId] = useState<string>("");
-  const [projectNotes, setProjectNotes] = useState("");
+  const [clientId, setClientId] = useState(clients[0]?.id ?? "");
+  const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
   const [formState, setFormState] = useState<"idle" | "saving" | "error">("idle");
   const [invoiceAmount, setInvoiceAmount] = useState("");
   const [invoiceState, setInvoiceState] = useState<"idle" | "creating" | "sent" | "error">("idle");
@@ -21,32 +21,31 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
   const [newProject, setNewProject] = useState({
     title: "",
     songCount: 1,
-    status: "tracking" as "tracking" | "mixing" | "mastering" | "complete",
+    status: "tracking" as ProjectStatus,
     dueDate: "",
     budgetUsd: 0,
     notes: "",
   });
 
-  useEffect(() => {
-    const firstClient = clients.find((client) => client.status === status);
-    setClientId((current) => (current && clients.some((client) => client.id === current) ? current : firstClient?.id ?? ""));
-  }, [clients, status]);
-
-  useEffect(() => {
-    const firstProject = projects.find((project) => project.clientId === clientId);
-    setProjectId((current) =>
-      current && projects.some((project) => project.id === current) ? current : firstProject?.id ?? "",
-    );
-  }, [projects, clientId]);
-
-  const filteredClients = useMemo(() => clients.filter((c) => c.status === status), [status]);
-  const selectedProjects = useMemo(() => projects.filter((p) => p.clientId === clientId), [clientId]);
-  const selectedProject = useMemo(() => projects.find((p) => p.id === projectId), [projectId]);
-  const projectInvoices = useMemo(() => invoices.filter((i) => i.projectId === projectId), [projectId]);
+  const filteredClients = useMemo(
+    () => clients.filter((client) => client.status === status),
+    [clients, status],
+  );
+  const selectedProjects = useMemo(
+    () => projects.filter((project) => project.clientId === clientId),
+    [projects, clientId],
+  );
+  const selectedProject = projects.find((project) => project.id === projectId);
+  const [projectNotes, setProjectNotes] = useState(selectedProject?.notes ?? "");
+  const [projectStatus, setProjectStatus] = useState<ProjectStatus>(selectedProject?.status ?? "tracking");
+  const projectInvoices = invoices.filter((invoice) => invoice.projectId === projectId);
+  const projectFiles = files.filter((file) => file.projectId === projectId);
+  const projectContracts = contracts.filter((contract) => contract.projectId === projectId);
 
   useEffect(() => {
     setProjectNotes(selectedProject?.notes ?? "");
-  }, [selectedProject?.id]);
+    setProjectStatus(selectedProject?.status ?? "tracking");
+  }, [selectedProject]);
 
   async function createProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -61,19 +60,12 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
       setFormState("error");
       return;
     }
-    setNewProject({
-      title: "",
-      songCount: 1,
-      status: "tracking",
-      dueDate: "",
-      budgetUsd: 0,
-      notes: "",
-    });
+    setNewProject({ title: "", songCount: 1, status: "tracking", dueDate: "", budgetUsd: 0, notes: "" });
     await onDataChanged();
     setFormState("idle");
   }
 
-  async function saveProjectNotes() {
+  async function saveProject() {
     if (!selectedProject) return;
     setFormState("saving");
     const response = await fetch("/api/dashboard/projects", {
@@ -82,7 +74,7 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
       body: JSON.stringify({
         id: selectedProject.id,
         notes: projectNotes,
-        status: selectedProject.status,
+        status: projectStatus,
       }),
     });
     if (!response.ok) {
@@ -93,6 +85,23 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
     setFormState("idle");
   }
 
+  async function archiveProject() {
+    if (!selectedProject) return;
+    if (!confirm(`Archive ${selectedProject.title}?`)) return;
+    await fetch("/api/dashboard/projects", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selectedProject.id, archived: true }),
+    });
+    await onDataChanged();
+  }
+
+  async function downloadFile(fileKey: string) {
+    const response = await fetch(`/api/files?key=${encodeURIComponent(fileKey)}&projectId=${projectId}`);
+    const payload = await response.json();
+    if (payload.url) window.open(payload.url, "_blank");
+  }
+
   async function createStripeInvoice() {
     if (!selectedProject) return;
     const amountUsd = Number(invoiceAmount);
@@ -101,49 +110,26 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
       setInvoiceMessage("Enter a valid invoice amount.");
       return;
     }
-
     setInvoiceState("creating");
-    setInvoiceMessage("");
-    try {
-      const response = await fetch("/api/dashboard/invoices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId: selectedProject.id,
-          amountUsd,
-          description: `${selectedProject.title} — Garden House session`,
-        }),
-      });
-
-      const raw = await response.text();
-      let payload: { error?: string; hostedInvoiceUrl?: string | null } | null = null;
-      try {
-        payload = raw ? (JSON.parse(raw) as { error?: string; hostedInvoiceUrl?: string | null }) : null;
-      } catch {
-        payload = null;
-      }
-
-      if (!response.ok) {
-        setInvoiceState("error");
-        setInvoiceMessage(
-          payload?.error ||
-            (raw ? raw.slice(0, 200) : `Could not create Stripe invoice (HTTP ${response.status}).`),
-        );
-        return;
-      }
-
-      setInvoiceAmount("");
-      setInvoiceState("sent");
-      setInvoiceMessage(
-        payload?.hostedInvoiceUrl
-          ? "Stripe invoice created and emailed to the client."
-          : "Stripe invoice created.",
-      );
-      await onDataChanged();
-    } catch (error) {
+    const response = await fetch("/api/dashboard/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectId: selectedProject.id,
+        amountUsd,
+        description: `${selectedProject.title} — Garden House session`,
+      }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
       setInvoiceState("error");
-      setInvoiceMessage(error instanceof Error ? error.message : "Network error creating invoice.");
+      setInvoiceMessage(payload.error || "Could not create invoice.");
+      return;
     }
+    setInvoiceAmount("");
+    setInvoiceState("sent");
+    setInvoiceMessage(payload.hostedInvoiceUrl ? "Stripe invoice created and emailed." : "Stripe invoice created.");
+    await onDataChanged();
   }
 
   return (
@@ -151,20 +137,15 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
       <div className="rounded-2xl bg-brand-surface p-4 shadow-soft">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-semibold">Clients</h3>
-          <button
-            onClick={() => setStatus(status === "active" ? "inactive" : "active")}
-            className="rounded bg-brand-green px-3 py-1 text-xs text-white"
-          >
+          <button onClick={() => setStatus(status === "active" ? "inactive" : "active")} className="rounded bg-brand-green px-3 py-1 text-xs text-white">
             {status === "active" ? "Show inactive" : "Show active"}
           </button>
         </div>
+        {filteredClients.length === 0 && <p className="text-sm text-brand-muted">No clients in this list yet.</p>}
         <ul className="space-y-2">
           {filteredClients.map((client) => (
             <li key={client.id}>
-              <button
-                className={`w-full rounded-lg border px-3 py-2 text-left ${clientId === client.id ? "border-brand-green bg-brand-green/10" : "border-brand-green/20"}`}
-                onClick={() => setClientId(client.id)}
-              >
+              <button className={`w-full rounded-lg border px-3 py-2 text-left ${clientId === client.id ? "border-brand-green bg-brand-green/10" : "border-brand-green/20"}`} onClick={() => setClientId(client.id)}>
                 <p className="font-medium">{client.name}</p>
                 <p className="text-xs text-brand-muted">{client.email}</p>
               </button>
@@ -173,14 +154,10 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
         </ul>
       </div>
       <div className="rounded-2xl bg-brand-surface p-4 shadow-soft">
-        <h3 className="mb-3 font-semibold">Projects (Kanban by status)</h3>
+        <h3 className="mb-3 font-semibold">Projects</h3>
         <div className="grid gap-3">
           {selectedProjects.map((project) => (
-            <button
-              key={project.id}
-              onClick={() => setProjectId(project.id)}
-              className={`rounded-lg border p-3 text-left ${projectId === project.id ? "border-brand-green bg-brand-green/10" : "border-brand-green/20"}`}
-            >
+            <button key={project.id} onClick={() => setProjectId(project.id)} className={`rounded-lg border p-3 text-left ${projectId === project.id ? "border-brand-green bg-brand-green/10" : "border-brand-green/20"}`}>
               <p className="font-medium">{project.title}</p>
               <p className="text-xs text-brand-muted">Status: {project.status}</p>
             </button>
@@ -188,136 +165,64 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
         </div>
         <form className="mt-4 grid gap-2 border-t border-brand-green/10 pt-4" onSubmit={createProject}>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">Add project</p>
-          <input
-            required
-            placeholder="Project title"
-            className="rounded-lg border border-brand-green/20 px-3 py-2 text-sm"
-            value={newProject.title}
-            onChange={(event) => setNewProject((current) => ({ ...current, title: event.target.value }))}
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              type="number"
-              min={1}
-              className="rounded-lg border border-brand-green/20 px-3 py-2 text-sm"
-              value={newProject.songCount}
-              onChange={(event) =>
-                setNewProject((current) => ({
-                  ...current,
-                  songCount: Math.max(1, Number(event.target.value || 1)),
-                }))
-              }
-            />
-            <select
-              className="rounded-lg border border-brand-green/20 px-3 py-2 text-sm"
-              value={newProject.status}
-              onChange={(event) =>
-                setNewProject((current) => ({
-                  ...current,
-                  status: event.target.value as "tracking" | "mixing" | "mastering" | "complete",
-                }))
-              }
-            >
+          <input required placeholder="Project title" className="rounded-lg border border-brand-green/20 px-3 py-2 text-sm" value={newProject.title} onChange={(e) => setNewProject((c) => ({ ...c, title: e.target.value }))} />
+          <input type="number" min={1} className="rounded-lg border border-brand-green/20 px-3 py-2 text-sm" value={newProject.songCount} onChange={(e) => setNewProject((c) => ({ ...c, songCount: Math.max(1, Number(e.target.value || 1)) }))} />
+          <button className="rounded bg-brand-green px-3 py-2 text-xs text-white" type="submit">Create project</button>
+        </form>
+      </div>
+      <div className="rounded-2xl bg-brand-surface p-4 shadow-soft">
+        <h3 className="mb-3 font-semibold">Project details</h3>
+        {selectedProject ? (
+          <div className="space-y-2 text-sm">
+            <p>{selectedProject.songCount} songs · due {selectedProject.dueDate || "—"} · ${selectedProject.budgetUsd.toLocaleString()}</p>
+            <label className="block text-xs font-medium">Status</label>
+            <select className="w-full rounded-lg border border-brand-green/20 px-3 py-2" value={projectStatus} onChange={(e) => setProjectStatus(e.target.value as ProjectStatus)}>
               <option value="tracking">tracking</option>
               <option value="mixing">mixing</option>
               <option value="mastering">mastering</option>
               <option value="complete">complete</option>
             </select>
-          </div>
-          <input
-            type="date"
-            className="rounded-lg border border-brand-green/20 px-3 py-2 text-sm"
-            value={newProject.dueDate}
-            onChange={(event) => setNewProject((current) => ({ ...current, dueDate: event.target.value }))}
-          />
-          <input
-            type="number"
-            min={0}
-            placeholder="Budget USD"
-            className="rounded-lg border border-brand-green/20 px-3 py-2 text-sm"
-            value={newProject.budgetUsd}
-            onChange={(event) =>
-              setNewProject((current) => ({ ...current, budgetUsd: Number(event.target.value || 0) }))
-            }
-          />
-          <button className="rounded bg-brand-green px-3 py-2 text-xs text-white" type="submit">
-            Create Project
-          </button>
-        </form>
-      </div>
-      <div className="rounded-2xl bg-brand-surface p-4 shadow-soft">
-        <h3 className="mb-3 font-semibold">Project Details</h3>
-        {selectedProject ? (
-          <div className="space-y-2 text-sm">
-            <p>
-              <strong>Metadata:</strong> {selectedProject.songCount} songs, due{" "}
-              {selectedProject.dueDate}
-            </p>
-            <p>
-              <strong>Files:</strong> Demo assets linked in CRM files section
-            </p>
-            <p>
-              <strong>Status:</strong> {selectedProject.status}
-            </p>
-            <p>
-              <strong>Budget:</strong> ${selectedProject.budgetUsd.toLocaleString()}
-            </p>
+            <p><strong>Contracts:</strong> {projectContracts.map((c) => `${c.title} (${c.status})`).join(", ") || "None"}</p>
             <div>
-              <p className="mb-1 font-semibold">Invoicing</p>
-              <ul className="mb-3 space-y-1">
-                {projectInvoices.length === 0 && (
-                  <li className="text-xs text-brand-muted">No invoices for this project yet.</li>
-                )}
-                {projectInvoices.map((invoice) => (
-                  <li key={invoice.id} className="rounded border border-brand-green/20 px-2 py-1 text-xs">
-                    ${invoice.amountUsd} — {invoice.status}
-                    {invoice.stripeInvoiceId ? ` (${invoice.stripeInvoiceId})` : ""}
-                  </li>
-                ))}
-              </ul>
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  type="number"
-                  min="1"
-                  step="0.01"
-                  placeholder="Amount USD"
-                  value={invoiceAmount}
-                  onChange={(event) => setInvoiceAmount(event.target.value)}
-                  className="w-32 rounded-lg border border-brand-green/20 px-2 py-1 text-xs"
-                />
-                <button
-                  type="button"
-                  className="rounded bg-brand-green px-3 py-1 text-xs text-white disabled:opacity-60"
-                  disabled={invoiceState === "creating"}
-                  onClick={createStripeInvoice}
-                >
+              <p className="mb-1 font-semibold">Files</p>
+              {projectFiles.length === 0 && <p className="text-xs text-brand-muted">No files yet.</p>}
+              {projectFiles.map((file) => (
+                <button key={file.id} className="mr-2 mt-1 rounded border border-brand-green/20 px-2 py-1 text-xs" onClick={() => void downloadFile(file.fileKey)}>
+                  {file.fileName}
+                </button>
+              ))}
+              <div className="mt-2">
+                <FileUploader purpose="project" clientId={selectedProject.clientId} projectId={selectedProject.id} onUploaded={onDataChanged} />
+              </div>
+            </div>
+            <div>
+              <p className="mb-1 font-semibold">Invoices</p>
+              {projectInvoices.map((invoice) => (
+                <p key={invoice.id} className="text-xs">
+                  ${invoice.amountUsd} — {invoice.status}
+                  {invoice.hostedInvoiceUrl && (
+                    <a className="ml-2 underline" href={invoice.hostedInvoiceUrl} target="_blank" rel="noreferrer">Open Stripe</a>
+                  )}
+                </p>
+              ))}
+              <div className="mt-2 flex gap-2">
+                <input type="number" min="1" step="0.01" placeholder="Amount USD" value={invoiceAmount} onChange={(e) => setInvoiceAmount(e.target.value)} className="w-32 rounded-lg border border-brand-green/20 px-2 py-1 text-xs" />
+                <button type="button" className="rounded bg-brand-green px-3 py-1 text-xs text-white" onClick={() => void createStripeInvoice()}>
                   {invoiceState === "creating" ? "Creating..." : "Create Stripe invoice"}
                 </button>
               </div>
-              {invoiceMessage && (
-                <p
-                  className={`mt-2 text-xs ${invoiceState === "error" ? "text-red-600" : "text-brand-green"}`}
-                >
-                  {invoiceMessage}
-                </p>
-              )}
+              {invoiceMessage && <p className={`mt-2 text-xs ${invoiceState === "error" ? "text-red-600" : "text-brand-green"}`}>{invoiceMessage}</p>}
             </div>
-            <p className="font-semibold">Notes</p>
-            <textarea
-              className="h-28 w-full rounded-lg border border-brand-green/20 p-2"
-              value={projectNotes}
-              onChange={(event) => setProjectNotes(event.target.value)}
-            />
-            <button className="w-fit rounded bg-brand-green px-3 py-2 text-xs text-white" onClick={saveProjectNotes}>
-              Save Notes
-            </button>
+            <textarea className="h-28 w-full rounded-lg border border-brand-green/20 p-2" value={projectNotes} onChange={(e) => setProjectNotes(e.target.value)} />
+            <div className="flex gap-2">
+              <button className="rounded bg-brand-green px-3 py-2 text-xs text-white" onClick={() => void saveProject()}>Save</button>
+              <button className="rounded border border-red-300 px-3 py-2 text-xs text-red-700" onClick={() => void archiveProject()}>Archive</button>
+            </div>
           </div>
         ) : (
-          <p className="text-sm text-brand-muted">Select a project to view metadata.</p>
+          <p className="text-sm text-brand-muted">Select a project.</p>
         )}
-        {formState === "error" && (
-          <p className="mt-2 text-xs text-red-600">Save failed. Confirm Supabase is configured and try again.</p>
-        )}
+        {formState === "error" && <p className="mt-2 text-xs text-red-600">Save failed.</p>}
       </div>
     </div>
   );

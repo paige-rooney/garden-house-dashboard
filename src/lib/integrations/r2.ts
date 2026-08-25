@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@/lib/env";
 
@@ -14,17 +14,34 @@ function getClient(): S3Client | null {
   });
 }
 
+export function r2Configured() {
+  return Boolean(getClient() && env.R2_BUCKET);
+}
+
 export async function getSignedUploadUrl(key: string, contentType = "application/octet-stream") {
   const client = getClient();
   if (!client || !env.R2_BUCKET) return null;
-
   const command = new PutObjectCommand({
     Bucket: env.R2_BUCKET,
     Key: key,
     ContentType: contentType,
   });
-
-  const url = await getSignedUrl(client, command, { expiresIn: 600 });
+  const url = await getSignedUrl(client, command, { expiresIn: 120 });
   const publicUrl = env.R2_PUBLIC_BASE_URL ? `${env.R2_PUBLIC_BASE_URL}/${key}` : null;
   return { url, key, publicUrl };
+}
+
+export async function getSignedDownloadUrl(key: string) {
+  const client = getClient();
+  if (!client || !env.R2_BUCKET) return null;
+  const command = new GetObjectCommand({ Bucket: env.R2_BUCKET, Key: key });
+  const url = await getSignedUrl(client, command, { expiresIn: 120 });
+  return { url, key };
+}
+
+export async function deleteObject(key: string) {
+  const client = getClient();
+  if (!client || !env.R2_BUCKET) return false;
+  await client.send(new DeleteObjectCommand({ Bucket: env.R2_BUCKET, Key: key }));
+  return true;
 }
