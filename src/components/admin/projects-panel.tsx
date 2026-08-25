@@ -18,6 +18,7 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
   const [invoiceAmount, setInvoiceAmount] = useState("");
   const [invoiceState, setInvoiceState] = useState<"idle" | "creating" | "sent" | "error">("idle");
   const [invoiceMessage, setInvoiceMessage] = useState("");
+  const [lastInvoiceUrl, setLastInvoiceUrl] = useState<string | null>(null);
   const [newProject, setNewProject] = useState({
     title: "",
     songCount: 1,
@@ -128,7 +129,12 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
     }
     setInvoiceAmount("");
     setInvoiceState("sent");
-    setInvoiceMessage(payload.hostedInvoiceUrl ? "Stripe invoice created and emailed." : "Stripe invoice created.");
+    setLastInvoiceUrl(payload.hostedInvoiceUrl || null);
+    setInvoiceMessage(
+      payload.hostedInvoiceUrl
+        ? "Stripe test invoice created. Use the button below to open the payment page."
+        : "Stripe invoice created, but Stripe did not return a payment link.",
+    );
     await onDataChanged();
   }
 
@@ -197,13 +203,24 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
             </div>
             <div>
               <p className="mb-1 font-semibold">Invoices</p>
+              {projectInvoices.length === 0 && <p className="text-xs text-brand-muted">No invoices yet.</p>}
               {projectInvoices.map((invoice) => (
-                <p key={invoice.id} className="text-xs">
-                  ${invoice.amountUsd} — {invoice.status}
+                <div key={invoice.id} className="mb-2 rounded-lg border border-brand-green/20 p-2">
+                  <p className="text-xs">
+                    ${invoice.amountUsd} — {invoice.status}
+                    {invoice.dueDate ? ` · due ${invoice.dueDate}` : ""}
+                  </p>
                   {invoice.hostedInvoiceUrl && (
-                    <a className="ml-2 underline" href={invoice.hostedInvoiceUrl} target="_blank" rel="noreferrer">Open Stripe</a>
+                    <a
+                      className="mt-1 inline-block rounded bg-brand-green px-3 py-1 text-xs text-white"
+                      href={invoice.hostedInvoiceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open test invoice
+                    </a>
                   )}
-                </p>
+                </div>
               ))}
               <div className="mt-2 flex gap-2">
                 <input type="number" min="1" step="0.01" placeholder="Amount USD" value={invoiceAmount} onChange={(e) => setInvoiceAmount(e.target.value)} className="w-32 rounded-lg border border-brand-green/20 px-2 py-1 text-xs" />
@@ -212,6 +229,16 @@ export function ProjectsPanel({ data, onDataChanged }: Props) {
                 </button>
               </div>
               {invoiceMessage && <p className={`mt-2 text-xs ${invoiceState === "error" ? "text-red-600" : "text-brand-green"}`}>{invoiceMessage}</p>}
+              {lastInvoiceUrl && invoiceState === "sent" && (
+                <a
+                  className="mt-2 inline-block rounded bg-brand-green px-3 py-2 text-sm text-white"
+                  href={lastInvoiceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open test invoice
+                </a>
+              )}
             </div>
             <textarea className="h-28 w-full rounded-lg border border-brand-green/20 p-2" value={projectNotes} onChange={(e) => setProjectNotes(e.target.value)} />
             <div className="flex gap-2">

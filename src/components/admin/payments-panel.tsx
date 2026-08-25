@@ -24,7 +24,16 @@ export function PaymentsPanel({ data }: { data: DashboardData }) {
               <p><strong>Status:</strong> {invoice.status}</p>
               <p><strong>Due:</strong> {invoice.dueDate || "—"}</p>
               {invoice.hostedInvoiceUrl && (
-                <p><a className="underline" href={invoice.hostedInvoiceUrl} target="_blank" rel="noreferrer">Open hosted invoice</a></p>
+                <p className="mt-2">
+                  <a
+                    className="inline-block rounded bg-brand-green px-3 py-1 text-xs text-white"
+                    href={invoice.hostedInvoiceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open test invoice
+                  </a>
+                </p>
               )}
               <p>
                 <strong>Payments:</strong>{" "}

@@ -25,9 +25,8 @@ Sign in at `/admin/login` with your own email. Then use the tabs at the top.
 
 1. Open the project.
 2. Type the amount in USD and click **Create Stripe invoice**.
-3. Stripe emails the client if test/live email is configured.
-4. Use **Open Stripe** / **Open hosted invoice** to see the payment page.
-5. Stay in **test mode** until live payments are approved.
+3. Click **Open test invoice** (green button) to view the Stripe payment page. Stripe may also email in test mode; that is not a live charge.
+4. Stay in **test mode** until live payments are approved.
 
 ## Manage contracts
 
