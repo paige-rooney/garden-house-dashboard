@@ -12,7 +12,7 @@ Public website and staff operations dashboard for Garden House Recording Studios
 
 1. Install [Node.js](https://nodejs.org/) 20+ and [pnpm](https://pnpm.io/).
 2. Copy `.env.example` to `.env.local` and fill in values. Never put secrets in git.
-3. In Supabase → SQL Editor, paste and run `supabase/migrations/20260824000000_production_foundation.sql`.
+3. In Supabase → SQL Editor, run both files in `supabase/migrations/` in date order.
 4. `pnpm install`
 5. `pnpm dev`
 6. Open http://127.0.0.1:3000 for the public site and http://127.0.0.1:3000/admin/login for staff.
@@ -36,4 +36,5 @@ The old address `/studio-green-room` now sends you to `/admin/login`.
 - [Deployment](docs/deployment.md)
 - [Database backups](docs/database-backups.md)
 - [Troubleshooting](docs/troubleshooting.md)
+- [How to find remaining keys](docs/find-keys.md)
 - [Production checklist](docs/admin-production-checklist.md)

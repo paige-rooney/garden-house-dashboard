@@ -45,10 +45,11 @@ Sign in at `/admin/login` with your own email. Then use the tabs at the top.
 
 ## Manage bookings
 
-1. Share `/book` for public requests.
-2. In **Calendar**, **Confirm** or **Cancel**.
-3. The system refuses overlapping times.
-4. Google Calendar sync starts after you click **Connect Google Calendar** (owner) and finish Google’s permission screen.
+1. Share `/book` for public requests (Monday–Saturday, 9:00 a.m.–6:00 p.m. Chicago time).
+2. Session types: pre-production call, 3-hour, 4-hour, 6-hour, and 3-hour cowrite.
+3. In **Calendar**, **Confirm** or **Cancel**.
+4. The system refuses overlapping times and times outside studio hours.
+5. Google Calendar sync starts after you click **Connect Google Calendar** (owner) and finish Google’s permission screen.
 
 ## Read revenue
 

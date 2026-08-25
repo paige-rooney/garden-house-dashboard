@@ -40,7 +40,10 @@ export default function BookPage() {
   return (
     <main className="mx-auto max-w-lg px-6 py-16">
       <h1 className="text-2xl font-semibold">Book Garden House</h1>
-      <p className="mt-2 text-sm text-brand-muted">Brentwood, TN · America/Chicago. Requests are reviewed by staff before they are confirmed.</p>
+      <p className="mt-2 text-sm text-brand-muted">
+        Brentwood, TN. Monday–Saturday, 9:00 a.m.–6:00 p.m. America/Chicago. Staff confirm every request
+        before it is locked in.
+      </p>
       <form className="mt-6 grid gap-3 rounded-2xl bg-brand-surface p-6 shadow-soft" onSubmit={onSubmit}>
         <select required value={sessionTypeId} onChange={(e) => setSessionTypeId(e.target.value)} className="rounded-lg border border-brand-green/20 px-3 py-2">
           {sessionTypes.map((item) => (

@@ -5,6 +5,7 @@ import { getSupabaseServiceClient } from "@/lib/supabase/admin";
 import { bookingPublicSchema } from "@/lib/validators/forms";
 import { sendTransactionalEmail } from "@/lib/email/send";
 import { env } from "@/lib/env";
+import { isWithinAvailability } from "@/lib/bookings/availability";
 
 export async function GET() {
   const supabase = getSupabaseServiceClient();
@@ -37,6 +38,15 @@ export async function POST(request: NextRequest) {
 
     const startsAt = new Date(parsed.data.startsAt);
     const endsAt = new Date(startsAt.getTime() + sessionType.duration_minutes * 60_000);
+    const { data: rules } = await supabase.from("availability_rules").select("*").eq("is_active", true);
+    if (
+      !isWithinAvailability(startsAt, endsAt, rules ?? [], env.STUDIO_TIMEZONE)
+    ) {
+      return NextResponse.json(
+        { error: "That time is outside studio hours (Monday–Saturday, 9:00 a.m.–6:00 p.m. Chicago time)." },
+        { status: 400 },
+      );
+    }
     const { data: conflicts } = await supabase
       .from("bookings")
       .select("id")

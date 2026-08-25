@@ -26,8 +26,9 @@ export function CalendarPanel({ data, onDataChanged }: { data: DashboardData; on
       <div className="rounded-2xl bg-brand-surface p-4 shadow-soft">
         <h3 className="mb-2 font-semibold">Studio calendar</h3>
         <p className="mb-3 text-sm text-brand-muted">
-          Default timezone is America/Chicago. Connect Google Calendar after you create a Google Cloud
-          OAuth client. Bookings still save here and refuse overlapping times.
+          Hours are Monday–Saturday, 9:00 a.m.–6:00 p.m. Chicago time. Session types: pre-production
+          call, 3-hour, 4-hour, 6-hour, and 3-hour cowrite. Connect Google Calendar after you have the
+          Google client ID. Bookings still save here and refuse overlapping times.
         </p>
         <a className="rounded bg-brand-green px-3 py-2 text-sm text-white" href="/api/calendar/oauth/start">
           Connect Google Calendar

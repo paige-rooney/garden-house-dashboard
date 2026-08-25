@@ -48,14 +48,15 @@ This file tracks implementation of the production admin dashboard.
 - [x] Signed uploads, progress, sanitization, MIME/size limits
 - [x] Metadata in Supabase, namespaced keys
 - [x] CORS documented
-- [ ] **Blocked on R2 access keys** (not in local env)
+- [x] Cloudflare account ID saved locally
+- [ ] **Blocked on R2 access key, secret, and public URL** (see `docs/find-keys.md`)
 
 ## Phase 5 — Stripe (test mode)
 
 - [x] Invoice create, webhook sync, idempotency, refund/void handling
 - [x] Revenue from successful payments + CSV
 - [x] Stay in test mode
-- [ ] **Blocked on Stripe test keys and webhook secret**
+- [ ] **Blocked on Stripe test keys** — Test mode is a **switch**, not a page titled Test (`docs/find-keys.md`)
 
 ## Phase 6 — Contracts
 
@@ -66,8 +67,7 @@ This file tracks implementation of the production admin dashboard.
 ## Phase 7 — Resend
 
 - [x] Contact, contracts, bookings use logged transactional send
-- [x] Dev redirect via `EMAIL_SAFE_RECIPIENT`
-- [ ] **Confirm sending domain DNS and safe recipient email**
+- [x] Dev redirect via `EMAIL_SAFE_RECIPIENT` (`paige.rooney817@gmail.com` saved locally)
 
 ## Phase 8 — Marketing and brand kit
 
@@ -76,9 +76,14 @@ This file tracks implementation of the production admin dashboard.
 
 ## Phase 9 — Google Calendar and bookings
 
-- [x] Availability defaults, public `/book`, overlap prevention, confirm/cancel emails
+- [x] Hours: Monday–Saturday 9:00 a.m.–6:00 p.m. Chicago time
+- [x] Session types: pre-production, 3h, 4h, 6h, 3h cowrite
+- [x] Public `/book`, overlap + hours checks, confirm/cancel emails
 - [x] OAuth start/callback with encrypted token storage
-- [ ] **Blocked on Google Cloud OAuth client, calendar ID, and owner booking rules**
+- [x] No minimum notice yet (deferred)
+- [x] No payment plans
+- [x] No social auto-posting
+- [ ] **Blocked on Google Cloud OAuth client, secret, and calendar ID**
 
 ## Phase 10 — Production quality and deployment
 

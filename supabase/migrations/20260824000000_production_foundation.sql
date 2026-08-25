@@ -316,13 +316,14 @@ insert into public.session_types (name, slug, duration_minutes, buffer_minutes, 
 values
   ('Pre-production call', 'pre-production-call', 30, 15, 0, 'Planning call before a session'),
   ('3-hour session', 'session-3h', 180, 30, 0, 'Standard studio session'),
+  ('4-hour session', 'session-4h', 240, 30, 0, 'Half-day studio session'),
   ('6-hour session', 'session-6h', 360, 30, 0, 'Full-day tracking block'),
-  ('Cowrite', 'cowrite', 120, 15, 0, 'Collaborative writing session')
+  ('Cowrite', 'cowrite', 180, 30, 0, 'Collaborative writing session')
 on conflict (slug) do nothing;
 
 insert into public.availability_rules (weekday, start_time, end_time, timezone)
-select weekday, '10:00'::time, '18:00'::time, 'America/Chicago'
-from generate_series(1, 5) as weekday
+select weekday, '09:00'::time, '18:00'::time, 'America/Chicago'
+from generate_series(1, 6) as weekday
 where not exists (select 1 from public.availability_rules);
 
 insert into public.contract_templates (name, body, legal_disclaimer)
