@@ -35,7 +35,7 @@ This file tracks implementation of the production admin dashboard.
 - [x] Fictional `supabase/seed_dev.sql`
 - [x] No silent demo CRM data
 - [x] Backup instructions in `docs/database-backups.md`
-- [ ] **You still need to run the SQL file in the Supabase SQL Editor**
+- [x] Both SQL files run in the Supabase SQL Editor
 
 ## Phase 3 — CRM and projects
 
@@ -84,7 +84,7 @@ This file tracks implementation of the production admin dashboard.
 - [x] No payment plans
 - [x] No social auto-posting
 - [x] Google client ID, secret, and calendar ID saved locally
-- [ ] Connect Google from the admin Calendar tab (OAuth click-through) after SQL is run
+- [x] Google Calendar connected from the admin Calendar tab
 
 ## Phase 10 — Production quality and deployment
 

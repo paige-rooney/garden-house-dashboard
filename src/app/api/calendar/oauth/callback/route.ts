@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/lib/env";
-import { encryptSecret } from "@/lib/crypto";
+import { lookupGoogleAccountEmail, saveTokens } from "@/lib/integrations/google-calendar";
 import { getSupabaseServiceClient } from "@/lib/supabase/admin";
 
 export async function GET(request: NextRequest) {
@@ -22,22 +22,37 @@ export async function GET(request: NextRequest) {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
-  const tokens = await tokenRes.json();
-  if (!tokenRes.ok || !tokens.refresh_token) {
+  const tokens = (await tokenRes.json()) as {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+  };
+  if (!tokenRes.ok || !tokens.access_token) {
     return NextResponse.redirect(new URL("/admin?calendar=error", origin));
   }
 
-  const supabase = getSupabaseServiceClient();
-  if (supabase) {
-    await supabase.from("integration_accounts").upsert({
-      provider: "google_calendar",
-      calendar_id: env.GOOGLE_CALENDAR_ID ?? "primary",
-      access_token_encrypted: encryptSecret(tokens.access_token),
-      refresh_token_encrypted: encryptSecret(tokens.refresh_token),
-      token_expires_at: new Date(Date.now() + (tokens.expires_in ?? 3600) * 1000).toISOString(),
-      scopes: tokens.scope,
-    }, { onConflict: "provider" });
+  if (!tokens.refresh_token) {
+    const supabase = getSupabaseServiceClient();
+    const existing = supabase
+      ? await supabase
+          .from("integration_accounts")
+          .select("refresh_token_encrypted")
+          .eq("provider", "google_calendar")
+          .maybeSingle()
+      : { data: null };
+    if (!existing.data?.refresh_token_encrypted) {
+      return NextResponse.redirect(new URL("/admin?calendar=error", origin));
+    }
   }
+
+  const accountEmail = await lookupGoogleAccountEmail(tokens.access_token);
+  await saveTokens({
+    accessToken: tokens.access_token,
+    refreshToken: tokens.refresh_token,
+    expiresIn: tokens.expires_in,
+    accountEmail,
+    calendarId: env.GOOGLE_CALENDAR_ID ?? "primary",
+  });
 
   return NextResponse.redirect(new URL("/admin?calendar=connected", origin));
 }

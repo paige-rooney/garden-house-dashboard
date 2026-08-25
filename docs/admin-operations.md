@@ -49,7 +49,7 @@ Sign in at `/admin/login` with your own email. Then use the tabs at the top.
 2. Session types: pre-production call, 3-hour, 4-hour, 6-hour, and 3-hour cowrite.
 3. In **Calendar**, **Confirm** or **Cancel**.
 4. The system refuses overlapping times and times outside studio hours.
-5. Google Calendar sync starts after you click **Connect Google Calendar** (owner) and finish Google’s permission screen.
+5. Google Calendar events show on the **Calendar** week view after you connect. Confirming a booking also adds it to Google Calendar.
 
 ## Read revenue
 

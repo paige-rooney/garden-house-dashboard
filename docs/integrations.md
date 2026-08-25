@@ -41,6 +41,8 @@ Webhook URL (production): `https://YOUR-DOMAIN/api/stripe/webhook`
 - Owner visits `/api/calendar/oauth/start`
 - Callback: `GOOGLE_REDIRECT_URI` (local, preview, and production each need their own authorized redirect)
 - Tokens are encrypted with `INTEGRATION_ENCRYPTION_KEY`
+- The Calendar tab loads this week’s events from Google (`GET /api/calendar/events`)
+- Confirming a booking creates a Google Calendar event; cancelling removes it
 
 Redirect URLs to add in Google Cloud:
 

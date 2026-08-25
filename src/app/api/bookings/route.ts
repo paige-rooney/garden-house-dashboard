@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireStaff } from "@/lib/auth/staff";
 import { sendTransactionalEmail } from "@/lib/email/send";
 import { jsonError } from "@/lib/http";
+import { createGoogleCalendarEvent, deleteGoogleCalendarEvent } from "@/lib/integrations/google-calendar";
 import { writeAudit } from "@/lib/security/audit";
 import { getSupabaseServiceClient } from "@/lib/supabase/admin";
 import { z } from "zod";
@@ -68,6 +69,34 @@ export async function PATCH(request: NextRequest) {
 
     const { error } = await supabase.from("bookings").update(payload).eq("id", parsed.data.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    if (parsed.data.status === "confirmed" && !existing.google_event_id) {
+      try {
+        const { data: sessionType } = existing.session_type_id
+          ? await supabase.from("session_types").select("name").eq("id", existing.session_type_id).maybeSingle()
+          : { data: null };
+        const summary = `Garden House · ${sessionType?.name ?? "Session"} · ${existing.guest_name || "Guest"}`;
+        const eventId = await createGoogleCalendarEvent({
+          summary,
+          description: existing.notes ?? undefined,
+          startsAt: startsAt,
+          endsAt: endsAt,
+        });
+        if (eventId) {
+          await supabase.from("bookings").update({ google_event_id: eventId }).eq("id", parsed.data.id);
+        }
+      } catch {
+        // Confirm the studio booking even if Google Calendar is unavailable.
+      }
+    }
+
+    if (parsed.data.status === "cancelled" && existing.google_event_id) {
+      try {
+        await deleteGoogleCalendarEvent(existing.google_event_id);
+      } catch {
+        // Keep the cancelled booking even if Google Calendar delete fails.
+      }
+    }
 
     if (existing.guest_email && (parsed.data.status === "confirmed" || parsed.data.status === "cancelled")) {
       await sendTransactionalEmail({

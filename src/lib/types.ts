@@ -126,6 +126,7 @@ export type Booking = {
   endsAt: string;
   status: BookingStatus;
   notes?: string | null;
+  googleEventId?: string | null;
 };
 
 export type SessionType = {

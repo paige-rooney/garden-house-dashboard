@@ -196,6 +196,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     endsAt: row.ends_at,
     status: row.status,
     notes: row.notes,
+    googleEventId: row.google_event_id,
   }));
 
   const sessionTypes: SessionType[] = (sessionTypesResult.error ? [] : sessionTypesResult.data ?? []).map((row) => ({

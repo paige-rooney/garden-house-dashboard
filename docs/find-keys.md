@@ -136,6 +136,6 @@ We will add the Vercel preview/production redirect URLs after hosting is live.
 - R2 access key, secret, and public bucket URL
 - Google client ID, secret, and calendar ID
 
-Still needed later: Stripe **test** webhook signing secret (after a public web address exists), then a one-time Google Calendar connect click in the admin Calendar tab.
+Still needed later: Stripe **test** webhook signing secret (after a public web address exists).
 
 Do not paste these keys into GitHub. If this chat is ever shared, rotate the Stripe, R2, and Google secrets.
