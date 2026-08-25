@@ -131,8 +131,11 @@ We will add the Vercel preview/production redirect URLs after hosting is live.
 
 ## What I already saved locally (not in GitHub)
 
-- Owner email: `paige@gardenhouserecordingstudios.com`
-- Safe test inbox: `paige.rooney817@gmail.com`
-- Cloudflare account ID (the one you sent)
+- Owner email, safe test inbox, Cloudflare account ID
+- Stripe test secret key
+- R2 access key, secret, and public bucket URL
+- Google client ID, secret, and calendar ID
 
-Send the Stripe `sk_test_…` key, R2 access key + secret, optional R2 public URL, and Google client ID/secret/calendar ID when you have them. I will put them only in local/Vercel settings, never in the repo.
+Still needed later: Stripe **test** webhook signing secret (after a public web address exists), then a one-time Google Calendar connect click in the admin Calendar tab.
+
+Do not paste these keys into GitHub. If this chat is ever shared, rotate the Stripe, R2, and Google secrets.

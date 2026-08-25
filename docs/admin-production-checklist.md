@@ -48,15 +48,15 @@ This file tracks implementation of the production admin dashboard.
 - [x] Signed uploads, progress, sanitization, MIME/size limits
 - [x] Metadata in Supabase, namespaced keys
 - [x] CORS documented
-- [x] Cloudflare account ID saved locally
-- [ ] **Blocked on R2 access key, secret, and public URL** (see `docs/find-keys.md`)
+- [x] Cloudflare account ID, access key, secret, and public bucket URL saved locally (not in GitHub)
 
 ## Phase 5 — Stripe (test mode)
 
 - [x] Invoice create, webhook sync, idempotency, refund/void handling
 - [x] Revenue from successful payments + CSV
 - [x] Stay in test mode
-- [ ] **Blocked on Stripe test keys** — Test mode is a **switch**, not a page titled Test (`docs/find-keys.md`)
+- [x] Stripe test secret key saved locally (must start with `sk_test_`)
+- [ ] Stripe test webhook secret after a public preview URL exists
 
 ## Phase 6 — Contracts
 
@@ -83,7 +83,8 @@ This file tracks implementation of the production admin dashboard.
 - [x] No minimum notice yet (deferred)
 - [x] No payment plans
 - [x] No social auto-posting
-- [ ] **Blocked on Google Cloud OAuth client, secret, and calendar ID**
+- [x] Google client ID, secret, and calendar ID saved locally
+- [ ] Connect Google from the admin Calendar tab (OAuth click-through) after SQL is run
 
 ## Phase 10 — Production quality and deployment
 
