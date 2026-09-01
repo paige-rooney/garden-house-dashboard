@@ -24,7 +24,10 @@ export async function GET() {
       stripe: getStripeClient() ? "configured" : "missing",
       email: getResendClient() ? "configured" : "missing",
       files: r2Configured() ? "configured" : "missing",
-      google: env.GOOGLE_CLIENT_ID ? "configured" : "missing",
+      googleClientId: env.GOOGLE_CLIENT_ID ? "configured" : "missing",
+      googleRedirect: env.GOOGLE_REDIRECT_URI ? "configured" : "missing",
+      googleCalendarId: env.GOOGLE_CALENDAR_ID ? "configured" : "missing",
+      encryptionKey: env.INTEGRATION_ENCRYPTION_KEY ? "configured" : "missing",
     },
   });
 }
