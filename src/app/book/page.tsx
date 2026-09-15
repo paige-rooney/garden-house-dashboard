@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { TopNav } from "@/components/marketing/top-nav";
 
 type SessionType = { id: string; name: string; duration_minutes: number };
 
@@ -38,7 +39,9 @@ export default function BookPage() {
   }
 
   return (
-    <main className="mx-auto max-w-lg px-6 py-16">
+    <div>
+      <TopNav />
+      <main className="mx-auto max-w-lg px-6 py-16">
       <h1 className="text-2xl font-semibold">Book Garden House</h1>
       <p className="mt-2 text-sm text-brand-muted">
         Brentwood, TN. Monday–Saturday, 9:00 a.m.–6:00 p.m. America/Chicago. Staff confirm every request
@@ -57,5 +60,6 @@ export default function BookPage() {
         {message && <p className="text-sm text-brand-muted">{message}</p>}
       </form>
     </main>
+    </div>
   );
 }

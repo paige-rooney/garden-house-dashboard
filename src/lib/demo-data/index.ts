@@ -41,18 +41,27 @@ export const portfolio: PortfolioItem[] = [
     artist: "Maya Hill",
     projectTitle: "Late Bloom",
     service: "Production + Mix",
+    cover: "/portfolio/myoldman.jpg",
+    spotifyUrl: "https://open.spotify.com",
+    appleMusicUrl: "https://music.apple.com",
   },
   {
     id: "pf2",
     artist: "Cedar Lane",
     projectTitle: "Homegrown EP",
     service: "Mixing",
+    cover: "/portfolio/bluedress.jpg",
+    spotifyUrl: "https://open.spotify.com",
+    appleMusicUrl: "https://music.apple.com",
   },
   {
     id: "pf3",
     artist: "Knox Wilder",
     projectTitle: "Southbound",
     service: "Cowrite + Production",
+    cover: "/portfolio/hot-n-cold.jpg",
+    spotifyUrl: "https://open.spotify.com",
+    appleMusicUrl: "https://music.apple.com",
   },
 ];
 

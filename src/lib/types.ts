@@ -143,14 +143,17 @@ export type Testimonial = {
   id: string;
   quote: string;
   name: string;
-  role: string;
+  role?: string;
 };
 
 export type PortfolioItem = {
   id: string;
   artist: string;
   projectTitle: string;
-  service: string;
+  service?: string;
+  cover: string;
+  spotifyUrl: string;
+  appleMusicUrl: string;
 };
 
 export type RevenuePoint = {

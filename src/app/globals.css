@@ -8,4 +8,11 @@
 
 body {
   @apply bg-brand-bg text-brand-dark antialiased;
+  font-family: var(--font-body), Georgia, serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display), Georgia, serif;
 }

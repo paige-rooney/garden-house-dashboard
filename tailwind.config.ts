@@ -6,19 +6,27 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          bg: "#F5F3EE",
-          surface: "#FFFCF7",
-          green: "#284D2D",
-          dark: "#233028",
-          muted: "#69706A"
-        }
+          bg: "#E8E0C8",
+          surface: "#F4EFE0",
+          green: "#637D4F",
+          rust: "#A64A0F",
+          blue: "#3865A2",
+          gold: "#D6A34D",
+          dark: "#2C3328",
+          muted: "#6B7064",
+        },
+      },
+      fontFamily: {
+        sans: ["var(--font-body)", "Georgia", "serif"],
+        heading: ["var(--font-display)", "Georgia", "serif"],
+        alta: ["Alta", "var(--font-secondary)", "sans-serif"],
       },
       boxShadow: {
-        soft: "0 8px 30px rgba(35, 48, 40, 0.08)"
-      }
-    }
+        soft: "0 8px 30px rgba(44, 51, 40, 0.08)",
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 };
 
 export default config;

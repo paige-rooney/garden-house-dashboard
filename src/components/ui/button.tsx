@@ -11,7 +11,7 @@ export function Button({ className, variant = "primary", ...props }: Props) {
       className={clsx(
         "rounded-xl px-4 py-2 text-sm font-medium transition-colors",
         {
-          "bg-brand-green text-white hover:bg-brand-dark": variant === "primary",
+          "bg-brand-green text-white hover:bg-brand-green/90": variant === "primary",
           "border border-brand-green/30 bg-brand-surface text-brand-dark hover:bg-brand-green/10":
             variant === "secondary",
           "text-brand-dark hover:bg-brand-green/10": variant === "ghost",
