@@ -15,7 +15,7 @@ export function ContractsPanel({ data, onDataChanged }: Props) {
   const [projectQuery, setProjectQuery] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [message, setMessage] = useState("");
-  const [signUrl, setSignUrl] = useState("");
+  const [signPath, setSignPath] = useState("");
 
   useEffect(() => {
     if (!templates.some((template) => template.id === templateId) && templates[0]) {
@@ -39,7 +39,7 @@ export function ContractsPanel({ data, onDataChanged }: Props) {
       return;
     }
     setStatus("sending");
-    setSignUrl("");
+    setSignPath("");
     const response = await fetch("/api/contracts/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -51,23 +51,23 @@ export function ContractsPanel({ data, onDataChanged }: Props) {
       setMessage(payload.error || "Could not send.");
       return;
     }
+    const nextPath = pathFromSignPayload(payload);
     setStatus("sent");
-    setSignUrl(payload.signUrl || "");
-    setMessage(payload.signUrl ? "Sent. Open the test signing link below." : "Sent to the client email on file.");
+    setSignPath(nextPath);
+    setMessage(nextPath ? "Sent. Open the test signing link below." : "Sent to the client email on file.");
     await onDataChanged();
   }
 
   const selectedProject = projects.find((project) => project.id === projectId);
   const selectedClient = clients.find((item) => item.id === selectedProject?.clientId);
 
-  function signingHref(url: string) {
+  function pathFromSignPayload(payload: { signPath?: string; signUrl?: string }) {
+    if (payload.signPath) return payload.signPath;
+    if (!payload.signUrl) return "";
     try {
-      const parsed = new URL(url, window.location.origin);
-      parsed.protocol = window.location.protocol;
-      parsed.host = window.location.host;
-      return parsed.toString();
+      return new URL(payload.signUrl, window.location.origin).pathname;
     } catch {
-      return url;
+      return "";
     }
   }
 
@@ -135,10 +135,10 @@ export function ContractsPanel({ data, onDataChanged }: Props) {
         {message && (
           <p className={`mt-3 text-sm ${status === "error" ? "text-red-600" : "text-brand-green"}`}>{message}</p>
         )}
-        {signUrl && status === "sent" && (
+        {signPath && status === "sent" && (
           <a
             className="mt-2 inline-block rounded bg-brand-green px-3 py-2 text-sm text-white"
-            href={signingHref(signUrl)}
+            href={signPath}
             target="_blank"
             rel="noreferrer"
           >

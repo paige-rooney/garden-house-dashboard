@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assertAllowedUpload, sanitizeFileName, buildObjectKey } from "@/lib/files";
 import { buildRevenueFromPayments } from "@/lib/revenue";
 import { mergeContractBody } from "@/lib/contracts/merge";
+import { normalizeSignToken } from "@/lib/contracts/sign-token";
 import { allowedOrigins, assertSameOrigin, HttpError, publicAppOrigin } from "@/lib/http";
 
 describe("file helpers", () => {
@@ -48,6 +49,12 @@ describe("contracts", () => {
       client_email: "maya@example.com",
     });
     expect(body).toContain("maya@example.com");
+  });
+
+  it("normalizes copied signing tokens", () => {
+    expect(normalizeSignToken("  abcdef1234  ")).toBe("abcdef1234");
+    expect(normalizeSignToken(["abc123xyz0"])).toBe("abc123xyz0");
+    expect(normalizeSignToken("token/")).toBe("token");
   });
 });
 

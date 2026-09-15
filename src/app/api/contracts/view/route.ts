@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { normalizeSignToken } from "@/lib/contracts/sign-token";
 import { getSupabaseServiceClient } from "@/lib/supabase/admin";
 
 export async function GET(request: NextRequest) {
-  const token = request.nextUrl.searchParams.get("token") || "";
+  const token = normalizeSignToken(request.nextUrl.searchParams.get("token") || "");
   const supabase = getSupabaseServiceClient();
   if (!supabase || !token) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const hash = createHash("sha256").update(token).digest("hex");

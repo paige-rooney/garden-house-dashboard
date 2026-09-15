@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { normalizeSignToken } from "@/lib/contracts/sign-token";
 import { jsonError } from "@/lib/http";
 import { sendTransactionalEmail } from "@/lib/email/send";
 import { getSupabaseServiceClient } from "@/lib/supabase/admin";
@@ -13,7 +14,7 @@ const schema = z.object({
 });
 
 function hashToken(token: string) {
-  return createHash("sha256").update(token).digest("hex");
+  return createHash("sha256").update(normalizeSignToken(token)).digest("hex");
 }
 
 export async function POST(request: NextRequest) {

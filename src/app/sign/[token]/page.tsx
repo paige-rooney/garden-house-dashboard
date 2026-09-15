@@ -1,17 +1,19 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { normalizeSignToken } from "@/lib/contracts/sign-token";
 
 export default function SignContractPage() {
   const params = useParams<{ token: string }>();
-  const token = params.token;
+  const token = useMemo(() => normalizeSignToken(params.token), [params.token]);
   const [name, setName] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [message, setMessage] = useState("Review the agreement, type your full name, and sign.");
 
   useEffect(() => {
-    void fetch(`/api/contracts/view?token=${token}`).then(async (response) => {
+    if (!token) return;
+    void fetch(`/api/contracts/view?token=${encodeURIComponent(token)}`).then(async (response) => {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) setMessage(payload.error || "This signing link is not valid.");
     });

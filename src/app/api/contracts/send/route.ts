@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireStaff } from "@/lib/auth/staff";
 import { mergeContractBody, DEFAULT_CONTRACT_DISCLAIMER } from "@/lib/contracts/merge";
 import { sendTransactionalEmail } from "@/lib/email/send";
+import { normalizeSignToken } from "@/lib/contracts/sign-token";
 import { env } from "@/lib/env";
 import { jsonError, publicAppOrigin } from "@/lib/http";
 import { writeAudit } from "@/lib/security/audit";
@@ -10,7 +11,7 @@ import { getSupabaseServiceClient } from "@/lib/supabase/admin";
 import { contractSendSchema } from "@/lib/validators/forms";
 
 function hashToken(token: string) {
-  return createHash("sha256").update(token).digest("hex");
+  return createHash("sha256").update(normalizeSignToken(token)).digest("hex");
 }
 
 export async function POST(request: NextRequest) {
@@ -81,7 +82,8 @@ export async function POST(request: NextRequest) {
       detail: `Sent to ${client.email}`,
     });
 
-    const signUrl = `${publicAppOrigin(request)}/sign/${token}`;
+    const signPath = `/sign/${token}`;
+    const signUrl = `${publicAppOrigin(request)}${signPath}`;
     const emailed = await sendTransactionalEmail({
       templateKey: "contract_sent",
       to: [client.email],
@@ -102,6 +104,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       contractId: contract.id,
+      signPath: env.APP_ENV === "production" ? undefined : signPath,
       signUrl: env.APP_ENV === "production" ? undefined : signUrl,
       email: emailed,
       disclaimer: DEFAULT_CONTRACT_DISCLAIMER,
