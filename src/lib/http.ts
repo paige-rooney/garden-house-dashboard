@@ -36,6 +36,21 @@ export function siteOrigin() {
   }
 }
 
+/** Origin for links we send or show (signing pages, etc.). Prefer this request's host on Vercel previews. */
+export function publicAppOrigin(request: Request) {
+  try {
+    const origin = new URL(request.url).origin;
+    if (origin && origin !== "null") return origin;
+  } catch {
+    // fall through
+  }
+  return (
+    originFromHost(process.env.VERCEL_BRANCH_URL) ||
+    originFromHost(process.env.VERCEL_URL) ||
+    siteOrigin()
+  );
+}
+
 export function allowedOrigins(request?: Request) {
   const origins = new Set([siteOrigin(), "http://localhost:3000", "http://127.0.0.1:3000"]);
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assertAllowedUpload, sanitizeFileName, buildObjectKey } from "@/lib/files";
 import { buildRevenueFromPayments } from "@/lib/revenue";
 import { mergeContractBody } from "@/lib/contracts/merge";
-import { allowedOrigins, assertSameOrigin, HttpError } from "@/lib/http";
+import { allowedOrigins, assertSameOrigin, HttpError, publicAppOrigin } from "@/lib/http";
 
 describe("file helpers", () => {
   it("sanitizes names and rejects path traversal", () => {
@@ -96,5 +96,15 @@ describe("csrf origins", () => {
     );
     expect(() => assertSameOrigin(request)).toThrow(HttpError);
     expect(() => assertSameOrigin(request)).toThrow(/Garden House site/);
+  });
+
+  it("builds public links from the request host", () => {
+    const request = new Request(
+      "https://garden-house-dashboard-git-cursor-3a01da-paige-rooneys-projects.vercel.app/api/contracts/send",
+      { method: "POST" },
+    );
+    expect(publicAppOrigin(request)).toBe(
+      "https://garden-house-dashboard-git-cursor-3a01da-paige-rooneys-projects.vercel.app",
+    );
   });
 });

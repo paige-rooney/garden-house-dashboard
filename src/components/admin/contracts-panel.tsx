@@ -60,6 +60,17 @@ export function ContractsPanel({ data, onDataChanged }: Props) {
   const selectedProject = projects.find((project) => project.id === projectId);
   const selectedClient = clients.find((item) => item.id === selectedProject?.clientId);
 
+  function signingHref(url: string) {
+    try {
+      const parsed = new URL(url, window.location.origin);
+      parsed.protocol = window.location.protocol;
+      parsed.host = window.location.host;
+      return parsed.toString();
+    } catch {
+      return url;
+    }
+  }
+
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <div className="rounded-2xl bg-brand-surface p-4 shadow-soft">
@@ -125,7 +136,12 @@ export function ContractsPanel({ data, onDataChanged }: Props) {
           <p className={`mt-3 text-sm ${status === "error" ? "text-red-600" : "text-brand-green"}`}>{message}</p>
         )}
         {signUrl && status === "sent" && (
-          <a className="mt-2 inline-block rounded bg-brand-green px-3 py-2 text-sm text-white" href={signUrl} target="_blank" rel="noreferrer">
+          <a
+            className="mt-2 inline-block rounded bg-brand-green px-3 py-2 text-sm text-white"
+            href={signingHref(signUrl)}
+            target="_blank"
+            rel="noreferrer"
+          >
             Open test signing page
           </a>
         )}

@@ -4,7 +4,7 @@ import { requireStaff } from "@/lib/auth/staff";
 import { mergeContractBody, DEFAULT_CONTRACT_DISCLAIMER } from "@/lib/contracts/merge";
 import { sendTransactionalEmail } from "@/lib/email/send";
 import { env } from "@/lib/env";
-import { jsonError } from "@/lib/http";
+import { jsonError, publicAppOrigin } from "@/lib/http";
 import { writeAudit } from "@/lib/security/audit";
 import { getSupabaseServiceClient } from "@/lib/supabase/admin";
 import { contractSendSchema } from "@/lib/validators/forms";
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       detail: `Sent to ${client.email}`,
     });
 
-    const signUrl = `${env.NEXT_PUBLIC_SITE_URL}/sign/${token}`;
+    const signUrl = `${publicAppOrigin(request)}/sign/${token}`;
     const emailed = await sendTransactionalEmail({
       templateKey: "contract_sent",
       to: [client.email],
