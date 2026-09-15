@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Damage Control by Jessie Godfrey">
-  <rect width="600" height="600" fill="#637D4F"/>
-  <rect x="28" y="28" width="544" height="544" fill="#E8E0C8"/>
-  <rect x="48" y="48" width="504" height="504" fill="#637D4F"/>
-  <circle cx="300" cy="248" r="78" fill="none" stroke="#D6A34D" stroke-width="3"/>
-  <circle cx="300" cy="248" r="18" fill="#D6A34D"/>
-  <text x="300" y="390" text-anchor="middle" fill="#E8E0C8" font-family="Georgia, serif" font-size="36">Damage Control</text>
-  <text x="300" y="434" text-anchor="middle" fill="#D6A34D" font-family="Georgia, serif" font-size="18" letter-spacing="3">JESSIE GODFREY</text>
-</svg>

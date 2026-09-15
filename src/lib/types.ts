@@ -153,7 +153,7 @@ export type PortfolioItem = {
   service?: string;
   cover: string;
   spotifyUrl: string;
-  appleMusicUrl: string;
+  appleMusicUrl?: string;
 };
 
 export type RevenuePoint = {

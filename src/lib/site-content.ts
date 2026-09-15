@@ -76,9 +76,8 @@ export const portfolio: PortfolioItem[] = [
     id: "damage-control",
     artist: "Jessie Godfrey",
     projectTitle: "Damage Control",
-    cover: "/portfolio/damage-control.svg",
-    spotifyUrl: "https://open.spotify.com/search/Damage%20Control%20Jessie%20Godfrey",
-    appleMusicUrl: "https://music.apple.com/us/search?term=Damage%20Control%20Jessie%20Godfrey",
+    cover: "/portfolio/damage-control.jpg",
+    spotifyUrl: "https://open.spotify.com/album/0ZVtNWzKyNVFboEDJFVwkz",
   },
   {
     id: "myoldman",
