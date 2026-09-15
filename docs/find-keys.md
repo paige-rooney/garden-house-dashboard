@@ -83,10 +83,16 @@ Private client files do **not** need to be public. For brand images that should 
 1. In the same bucket → **Settings** → **CORS Policy**.
 2. Add this (you can change the production domain later):
 
+Replace the **whole** policy (do not add a third separate rule). All origins go in one `AllowedOrigins` list:
+
 ```json
 [
   {
-    "AllowedOrigins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+    "AllowedOrigins": [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "https://garden-house-dashboard-git-cursor-3a01da-paige-rooneys-projects.vercel.app"
+    ],
     "AllowedMethods": ["GET", "PUT", "HEAD"],
     "AllowedHeaders": ["*"],
     "ExposeHeaders": ["ETag"],
@@ -94,6 +100,8 @@ Private client files do **not** need to be public. For brand images that should 
   }
 ]
 ```
+
+No trailing slash on the Vercel URL.
 
 ---
 

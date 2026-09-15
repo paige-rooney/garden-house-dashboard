@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assertAllowedUpload, sanitizeFileName, buildObjectKey } from "@/lib/files";
 import { buildRevenueFromPayments } from "@/lib/revenue";
 import { mergeContractBody } from "@/lib/contracts/merge";
-import { allowedOrigins } from "@/lib/http";
+import { allowedOrigins, assertSameOrigin, HttpError } from "@/lib/http";
 
 describe("file helpers", () => {
   it("sanitizes names and rejects path traversal", () => {
@@ -55,5 +55,46 @@ describe("csrf origins", () => {
   it("allows local development origins", () => {
     const origins = allowedOrigins();
     expect(origins.has("http://localhost:3000") || origins.has("http://127.0.0.1:3000")).toBe(true);
+  });
+
+  it("allows the current Vercel deployment and branch URLs", () => {
+    const previousUrl = process.env.VERCEL_URL;
+    const previousBranch = process.env.VERCEL_BRANCH_URL;
+    process.env.VERCEL_URL = "garden-house-dashboard-abc123.vercel.app";
+    process.env.VERCEL_BRANCH_URL =
+      "garden-house-dashboard-git-cursor-3a01da-paige-rooneys-projects.vercel.app";
+    try {
+      const origins = allowedOrigins();
+      expect(origins.has("https://garden-house-dashboard-abc123.vercel.app")).toBe(true);
+      expect(
+        origins.has("https://garden-house-dashboard-git-cursor-3a01da-paige-rooneys-projects.vercel.app"),
+      ).toBe(true);
+    } finally {
+      if (previousUrl === undefined) delete process.env.VERCEL_URL;
+      else process.env.VERCEL_URL = previousUrl;
+      if (previousBranch === undefined) delete process.env.VERCEL_BRANCH_URL;
+      else process.env.VERCEL_BRANCH_URL = previousBranch;
+    }
+  });
+
+  it("allows mutating requests from the same preview host", () => {
+    const origin = "https://garden-house-dashboard-git-cursor-3a01da-paige-rooneys-projects.vercel.app";
+    const request = new Request(`${origin}/api/files`, {
+      method: "POST",
+      headers: { origin },
+    });
+    expect(() => assertSameOrigin(request)).not.toThrow();
+  });
+
+  it("rejects mutating requests from another site", () => {
+    const request = new Request(
+      "https://garden-house-dashboard-git-cursor-3a01da-paige-rooneys-projects.vercel.app/api/files",
+      {
+        method: "POST",
+        headers: { origin: "https://evil.example" },
+      },
+    );
+    expect(() => assertSameOrigin(request)).toThrow(HttpError);
+    expect(() => assertSameOrigin(request)).toThrow(/Garden House site/);
   });
 });

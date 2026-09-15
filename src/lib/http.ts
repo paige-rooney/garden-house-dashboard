@@ -19,6 +19,15 @@ export function jsonError(error: unknown, fallbackStatus = 500) {
   return NextResponse.json({ error: message }, { status: fallbackStatus });
 }
 
+function originFromHost(host: string | undefined) {
+  if (!host) return null;
+  try {
+    return new URL(host.includes("://") ? host : `https://${host}`).origin;
+  } catch {
+    return null;
+  }
+}
+
 export function siteOrigin() {
   try {
     return new URL(env.NEXT_PUBLIC_SITE_URL).origin;
@@ -27,8 +36,22 @@ export function siteOrigin() {
   }
 }
 
-export function allowedOrigins() {
+export function allowedOrigins(request?: Request) {
   const origins = new Set([siteOrigin(), "http://localhost:3000", "http://127.0.0.1:3000"]);
+
+  for (const host of [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL]) {
+    const origin = originFromHost(host);
+    if (origin) origins.add(origin);
+  }
+
+  if (request) {
+    try {
+      origins.add(new URL(request.url).origin);
+    } catch {
+      // Ignore malformed request URLs; the allowlist above still applies.
+    }
+  }
+
   return origins;
 }
 
@@ -37,7 +60,7 @@ export function assertSameOrigin(request: Request) {
   if (method === "GET" || method === "HEAD" || method === "OPTIONS") return;
 
   const originHeader = request.headers.get("origin");
-  const allowed = allowedOrigins();
+  const allowed = allowedOrigins(request);
   if (originHeader) {
     if (!allowed.has(originHeader)) {
       throw new HttpError(403, "This request did not come from the Garden House site.", "csrf");
