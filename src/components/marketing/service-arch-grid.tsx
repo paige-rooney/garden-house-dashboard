@@ -6,7 +6,7 @@ export function ServiceArchGrid() {
     <ul className="grid grid-cols-2 justify-items-center gap-4 sm:gap-5 lg:grid-cols-4">
       {services.map((service) => (
         <li key={service.name} className="flex w-full max-w-[13.5rem]">
-          <article className="relative flex min-h-[22rem] w-full flex-col overflow-hidden rounded-t-[999px] border border-brand-green/25 border-b-brand-gold/50 shadow-soft sm:min-h-[24rem]">
+          <article className="relative flex min-h-[22rem] w-full flex-col overflow-hidden rounded-t-[999px] border border-brand-green/25 shadow-soft sm:min-h-[24rem]">
             <Image
               src={service.image}
               alt={service.imageAlt}

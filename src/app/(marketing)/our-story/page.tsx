@@ -8,7 +8,7 @@ export default function OurStoryPage() {
       <TopNav />
       <main className="mx-auto grid max-w-4xl gap-6 px-6 py-8">
         <section className="rounded-2xl bg-brand-green p-8 text-white shadow-soft">
-          <p className="font-alta text-sm uppercase tracking-[0.28em] text-brand-gold">Our Story</p>
+          <p className="font-alta text-sm uppercase tracking-[0.28em] text-white/80">Our Story</p>
           <h1 className="mt-2 font-heading text-3xl font-semibold">Get to Know Us</h1>
           <p className="mt-2 font-sans text-white/85">{site.tagline}</p>
         </section>

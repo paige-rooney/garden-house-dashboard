@@ -4,10 +4,12 @@
 
 :root {
   color-scheme: light;
+  --brand-bg: #faf7ef;
 }
 
 body {
-  @apply bg-brand-bg text-brand-dark antialiased;
+  @apply text-brand-dark antialiased;
+  background-color: var(--brand-bg);
   font-family: var(--font-body), Georgia, serif;
 }
 

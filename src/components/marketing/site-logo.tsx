@@ -10,7 +10,7 @@ export function SiteLogo({ variant = "nav" }: Props) {
   if (variant === "hero") {
     return (
       <div>
-        <p className="font-alta text-sm uppercase tracking-[0.28em] text-brand-gold">
+        <p className="font-alta text-sm uppercase tracking-[0.28em] text-white/80">
           {site.shortName}
         </p>
         <p className="mt-1 font-heading text-2xl font-semibold tracking-tight">Recording Studios</p>

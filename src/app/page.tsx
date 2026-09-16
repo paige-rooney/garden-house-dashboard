@@ -44,8 +44,8 @@ export default function Page() {
         <Section title="Testimonials">
           <ul className="grid gap-4 lg:grid-cols-3">
             {testimonials.map((item) => (
-              <li key={item.id} className="rounded-xl border border-brand-gold/40 bg-brand-bg/50 p-5">
-                <p className="font-heading text-3xl leading-none text-brand-gold">&ldquo;</p>
+              <li key={item.id} className="rounded-xl border border-brand-green/20 bg-brand-bg/50 p-5">
+                <p className="font-heading text-3xl leading-none text-brand-green">&ldquo;</p>
                 <p className="font-sans text-sm leading-relaxed text-brand-dark">{item.quote}</p>
                 <p className="mt-4 font-alta text-sm tracking-wide text-brand-rust">
                   {item.name}
