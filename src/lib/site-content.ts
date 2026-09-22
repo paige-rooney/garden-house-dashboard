@@ -12,6 +12,44 @@ export const site = {
   instagramUrl: "https://instagram.com/gardenhouse_recordingstudios",
 };
 
+export const heroSlides = [
+  {
+    src: "/hero/garden-house-hero.png",
+    alt: "Garden House Recording Studios",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-session.jpg",
+    alt: "Artists tracking a session together at Garden House",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-group.jpg",
+    alt: "A writing session crew together in the studio",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-lounge.jpg",
+    alt: "A live tracking session in the Garden House lounge",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-guitar.jpg",
+    alt: "An artist tracking acoustic guitar in the studio",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-vocals.jpg",
+    alt: "An artist recording vocals at Garden House",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-piano.jpg",
+    alt: "An artist playing keys in the studio",
+    objectPosition: "center 28%",
+  },
+];
+
 export const ourStory = {
   mission:
     "Music is not meant to be made alone. Garden House exists to create deeper community in the music industry. Whether you’re an artist, writer, producer, engineer, or musician, there’s a place at Garden House for your art and your skills. We prioritize collaboration at every stage of the process. When you bring your work to Garden House, you direct the vision, and our team works alongside you to bring that vision to life. Let’s grow upwards together.",
