@@ -115,21 +115,3 @@ create unique index if not exists idx_invoices_stripe_invoice_id
 create unique index if not exists idx_payments_stripe_payment_intent_id
   on payments (stripe_payment_intent_id)
   where stripe_payment_intent_id is not null;
-
--- The application reaches these tables only from trusted server routes. Keep
--- clean installs reachable after automatic grants end without exposing the
--- tables to browser roles.
-grant select, insert, update, delete
-on table
-  public.clients,
-  public.projects,
-  public.project_files,
-  public.invoices,
-  public.payments,
-  public.contract_templates,
-  public.contracts,
-  public.events,
-  public.mailing_list_subscribers,
-  public.marketing_notes,
-  public.marketing_assets
-to service_role;
