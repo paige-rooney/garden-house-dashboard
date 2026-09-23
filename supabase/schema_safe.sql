@@ -143,4 +143,22 @@ BEGIN
 END
 $$;
 
+-- The application reaches these tables only from trusted server routes. Keep
+-- clean installs reachable after automatic grants end without exposing the
+-- tables to browser roles.
+grant select, insert, update, delete
+on table
+  public.clients,
+  public.projects,
+  public.project_files,
+  public.invoices,
+  public.payments,
+  public.contract_templates,
+  public.contracts,
+  public.events,
+  public.mailing_list_subscribers,
+  public.marketing_notes,
+  public.marketing_assets
+to service_role;
+
 NOTIFY pgrst, 'reload schema';
