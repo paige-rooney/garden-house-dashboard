@@ -28,7 +28,7 @@ export default function OurStoryPage() {
           </ul>
         </Section>
 
-        <Section title="What we do">
+        <Section title="What We Do">
           {ourStory.whatWeDo.map((paragraph) => (
             <p key={paragraph.slice(0, 24)} className="mb-3 font-sans text-sm leading-relaxed text-brand-dark last:mb-0">
               {paragraph}
@@ -37,10 +37,22 @@ export default function OurStoryPage() {
         </Section>
 
         <Section title="Meet the Founder">
-          <p className="font-alta text-sm tracking-wide text-brand-rust">
-            {ourStory.founder.name} · {ourStory.founder.role}
-          </p>
-          <p className="mt-3 font-sans text-sm leading-relaxed text-brand-dark">{ourStory.founder.bio}</p>
+          <div className="flex flex-col items-start gap-6 md:flex-row md:gap-8">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ourStory.founder.image}
+              alt={ourStory.founder.imageAlt}
+              width={682}
+              height={1024}
+              className="h-auto w-full max-w-[16rem] shrink-0 rounded-xl object-cover md:w-[15rem] md:max-w-none"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="font-heading text-base font-bold tracking-wide text-brand-rust">
+                {ourStory.founder.name} · {ourStory.founder.role}
+              </p>
+              <p className="mt-3 font-sans text-sm leading-relaxed text-brand-dark">{ourStory.founder.bio}</p>
+            </div>
+          </div>
         </Section>
       </main>
     </div>

@@ -11,27 +11,44 @@ export default function Page() {
   return (
     <div>
       <TopNav />
-      <main className="mx-auto grid max-w-6xl gap-6 px-6 py-8">
-        <HeroSlideshow />
+      <HeroSlideshow />
 
-        <Section title={site.tagline}>
-          <p className="max-w-3xl font-sans text-sm leading-relaxed text-brand-dark">{site.about}</p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link
-              href="/services"
-              className="rounded-lg bg-brand-green px-4 py-2 font-alta text-sm tracking-wide text-white"
-            >
-              Explore Services
-            </Link>
-            <Link
-              href="/contact"
-              className="rounded-lg border border-brand-green/30 px-4 py-2 font-alta text-sm tracking-wide text-brand-dark"
-            >
-              Get In Touch
-            </Link>
+      <section className="bg-brand-green">
+        <div className="flex flex-col items-center gap-8 px-6 py-10 md:flex-row md:items-center md:justify-between md:gap-10 md:px-10 md:py-12">
+          <div className="min-w-0 flex-1">
+            <h2 className="font-heading text-2xl font-semibold text-white md:text-3xl">{site.tagline}</h2>
+            <div className="mb-5 mt-2 h-px w-16 bg-white/70" aria-hidden />
+            <p className="max-w-3xl font-sans text-sm leading-relaxed text-white/90">{site.about}</p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                href="/services"
+                className="rounded-lg bg-brand-bg px-4 py-2 font-alta text-sm tracking-wide text-brand-green"
+              >
+                Explore Services
+              </Link>
+              <Link
+                href="/contact"
+                className="rounded-lg border border-white/40 px-4 py-2 font-alta text-sm tracking-wide text-white"
+              >
+                Get In Touch
+              </Link>
+            </div>
           </div>
-        </Section>
+          {/* Native img keeps the lockup sharp on the green band. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/logo-lockup.png"
+            alt=""
+            width={819}
+            height={1024}
+            draggable={false}
+            className="h-auto w-[11.5rem] shrink-0 sm:w-[13.5rem] md:w-[15rem] lg:w-[16.5rem]"
+            aria-hidden
+          />
+        </div>
+      </section>
 
+      <main className="mx-auto grid max-w-6xl gap-6 px-6 py-8">
         <Section title="Services">
           <ServiceArchGrid />
         </Section>

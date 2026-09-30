@@ -1,6 +1,6 @@
 import "./globals.css";
 import { ReactNode } from "react";
-import { Belleza, Lora, Playfair_Display } from "next/font/google";
+import { Bona_Nova, Lora, Playfair_Display } from "next/font/google";
 import { site } from "@/lib/site-content";
 
 const playfair = Playfair_Display({
@@ -15,9 +15,9 @@ const lora = Lora({
   display: "swap",
 });
 
-const belleza = Belleza({
+const bonaNova = Bona_Nova({
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "700"],
   variable: "--font-secondary",
   display: "swap",
 });
@@ -29,7 +29,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${lora.variable} ${belleza.variable}`}>
+    <html lang="en" className={`${playfair.variable} ${lora.variable} ${bonaNova.variable}`}>
       <body>{children}</body>
     </html>
   );

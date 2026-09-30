@@ -12,13 +12,13 @@ const links = [
 
 export function TopNav() {
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-green/10 bg-brand-bg/95 backdrop-blur">
+    <header className="sticky top-0 z-50 bg-brand-green">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <SiteLogo />
         <ul className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 font-alta text-xs uppercase tracking-[0.18em]">
           {links.map((link) => (
             <li key={link.href}>
-              <Link href={link.href as Route} className="text-brand-dark hover:text-brand-green">
+              <Link href={link.href as Route} className="text-white hover:text-white/80">
                 {link.label}
               </Link>
             </li>

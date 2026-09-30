@@ -18,7 +18,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-body)", "Georgia", "serif"],
         heading: ["var(--font-display)", "Georgia", "serif"],
-        alta: ["Alta", "var(--font-secondary)", "sans-serif"],
+        alta: ["var(--font-secondary)", "Georgia", "serif"],
       },
       boxShadow: {
         soft: "0 8px 30px rgba(44, 51, 40, 0.08)",

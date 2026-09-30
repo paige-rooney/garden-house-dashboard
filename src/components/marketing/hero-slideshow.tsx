@@ -1,51 +1,60 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { heroSlides } from "@/lib/site-content";
 
-const INTERVAL_MS = 5500;
+const INTERVAL_MS = 3000;
 
 export function HeroSlideshow() {
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const count = heroSlides.length;
-
-  const goTo = useCallback((next: number) => {
-    setIndex(((next % count) + count) % count);
-  }, [count]);
+  const [index, setIndex] = useState(0);
+  const [animate, setAnimate] = useState(true);
+  const frames = count > 0 ? [...heroSlides, heroSlides[0]] : [];
 
   const showNext = useCallback(() => {
-    setIndex((current) => (current + 1) % count);
+    setIndex((current) => (current >= count ? current : current + 1));
   }, [count]);
 
   useEffect(() => {
-    if (paused) return;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (media.matches) return;
 
     const id = window.setInterval(showNext, INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, [paused, showNext]);
+  }, [showNext]);
+
+  useLayoutEffect(() => {
+    if (animate || index !== 0) return;
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setAnimate(true));
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [animate, index]);
+
+  function handleTransitionEnd(event: React.TransitionEvent<HTMLDivElement>) {
+    if (event.target !== event.currentTarget) return;
+    if (index !== count) return;
+    setAnimate(false);
+    setIndex(0);
+  }
 
   return (
     <section
-      className="relative overflow-hidden rounded-2xl shadow-soft"
+      className="relative w-full overflow-hidden"
       aria-roledescription="carousel"
       aria-label="Studio photos"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
     >
       <div className="relative aspect-[703/426] overflow-hidden bg-brand-dark/10">
         <div
-          className="absolute bottom-0 left-0 top-0 flex transition-transform duration-700 ease-out motion-reduce:transition-none"
-          style={{
-            width: `${count * 100}%`,
-            transform: `translateX(-${index * (100 / count)}%)`,
-          }}
+          className={`absolute inset-0 flex motion-reduce:transition-none ${
+            animate ? "transition-transform duration-700 ease-out" : ""
+          }`}
+          style={{ transform: `translate3d(-${index * 100}%, 0, 0)` }}
+          onTransitionEnd={handleTransitionEnd}
         >
-          {heroSlides.map((slide, slideIndex) => (
-            <div key={slide.src} className="h-full shrink-0" style={{ width: `${100 / count}%` }}>
-              {/* Native img so frames stay at the slideshow’s aspect without next/image layout quirks. */}
+          {frames.map((slide, slideIndex) => (
+            <div key={`${slide.src}-${slideIndex}`} className="h-full w-full shrink-0 grow-0 basis-full">
+              {/* Native img keeps the full-bleed crop and avoids next/image layout quirks. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={slide.src}
@@ -59,21 +68,6 @@ export function HeroSlideshow() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2 rounded-full bg-brand-dark/25 px-2 py-1.5">
-        {heroSlides.map((slide, slideIndex) => (
-          <button
-            key={slide.src}
-            type="button"
-            aria-label={`Show photo ${slideIndex + 1}`}
-            aria-current={slideIndex === index ? true : undefined}
-            className={`h-2.5 w-2.5 rounded-full ${
-              slideIndex === index ? "bg-white" : "bg-white/50 hover:bg-white/80"
-            }`}
-            onClick={() => goTo(slideIndex)}
-          />
-        ))}
       </div>
     </section>
   );

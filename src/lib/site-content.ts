@@ -7,17 +7,12 @@ export const site = {
   about:
     "Songs are seeds. At Garden House Recording Studios, we don't just hit record. We collaborate with creatives to grow something meaningful. Whether you come with a new idea or a fully-formed vision, we take your songs from worktape to record — from raw to rooted.",
   location: "Brentwood, TN",
-  email: "hello@gardenhouserecordingstudios.com",
+  email: "paige@gardenhouserecordingstudios.com",
   instagram: "gardenhouse_recordingstudios",
   instagramUrl: "https://instagram.com/gardenhouse_recordingstudios",
 };
 
 export const heroSlides = [
-  {
-    src: "/hero/garden-house-hero.png",
-    alt: "Garden House Recording Studios",
-    objectPosition: "center",
-  },
   {
     src: "/hero/slide-session.jpg",
     alt: "Artists tracking a session together at Garden House",
@@ -48,6 +43,36 @@ export const heroSlides = [
     alt: "An artist playing keys in the studio",
     objectPosition: "center 28%",
   },
+  {
+    src: "/hero/slide-bass.jpg",
+    alt: "A Fender Jazz Bass headstock in warm studio light",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-mix-desk.jpg",
+    alt: "Mixing and editing at the Garden House desk",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-headphones.jpg",
+    alt: "An artist putting on headphones at the vocal mic",
+    objectPosition: "center 40%",
+  },
+  {
+    src: "/hero/slide-interface.jpg",
+    alt: "The studio interface and mix session at the desk",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-duo-guitar.jpg",
+    alt: "Two artists playing acoustic guitars together in the lounge",
+    objectPosition: "center",
+  },
+  {
+    src: "/hero/slide-ukulele.jpg",
+    alt: "Artists playing ukulele and guitar in the studio",
+    objectPosition: "center",
+  },
 ];
 
 export const ourStory = {
@@ -74,7 +99,9 @@ export const ourStory = {
   founder: {
     name: "Paige Rooney",
     role: "Founder, owner, and executive producer",
-    bio: "Paige Rooney, founder/owner/executive producer, started Garden House to fill a gap in the music industry. During her time studying Songwriting and Audio Engineering Technology at Belmont University, she noticed that many people in the industry work as their own islands. Collaboration and genuine support for creatives’ goals and vision was lacking. After graduating, she launched Garden House Recording Studios with the mission to connect creatives, strengthen community, and cultivate excellent music. She combined her love of people, plants, and production to create an environment where artists feel supported in their art and encouraged to create. She believes that nothing worth doing should ever be done alone, and when you have good soil to root yourself in, and good people to grow alongside, the impact of your art increases exponentially.",
+    image: "/about/paige.jpg",
+    imageAlt: "Paige Rooney, founder of Garden House Recording Studios",
+    bio: "Paige Rooney launched Garden House to fill a gap in the music industry. During her time studying Songwriting and Audio Engineering Technology at Belmont University, she noticed that collaboration and genuine support for creatives’ goals and vision was lacking. After graduating, she launched Garden House Recording Studios with the mission to connect creatives, strengthen community, and cultivate excellent music. She combined her love of people, plants, and production to create an environment where artists feel supported in their art and encouraged to create. She believes that nothing worth doing should ever be done alone, and when you have good soil to root yourself in, and good people to grow alongside, the impact of your art increases exponentially.",
   },
 };
 
@@ -84,28 +111,32 @@ export const services = [
     description:
       "Collaborate with our team in a supportive studio environment, where each track builds your sound and crafts your vision.",
     image: "/services/recording.jpg",
-    imageAlt: "Artist recording vocals in the studio",
+    imageAlt: "Close-mic recording an acoustic guitar at Garden House",
+    objectPosition: "center 32%",
   },
   {
     name: "Mixing",
     description:
       "Bring your songs to the next level with a polished mix. Grow in your art and fuel your creativity.",
     image: "/services/mixing.jpg",
-    imageAlt: "Mixing console in a recording studio",
+    imageAlt: "A mix session on laptop and studio monitors",
+    objectPosition: "center 42%",
   },
   {
     name: "Editing & Vocal Tuning",
     description:
       "Professional editing and vocal tuning services to prepare your recorded stems for the mix phase.",
     image: "/services/editing.jpg",
-    imageAlt: "Studio session prepared for editing and vocal tuning",
+    imageAlt: "Editing a session at the Garden House desk",
+    objectPosition: "0% 50%",
   },
   {
     name: "Events",
     description:
       "Connect with other creatives and grow upwards together. See our socials for upcoming studio events.",
     image: "/services/events.jpg",
-    imageAlt: "Live music event with an audience",
+    imageAlt: "Artists gathered for a live session at Garden House",
+    objectPosition: "28% 40%",
   },
 ];
 

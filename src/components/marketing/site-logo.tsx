@@ -1,29 +1,15 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { site } from "@/lib/site-content";
 
-type Props = {
-  variant?: "nav" | "hero";
-};
-
-export function SiteLogo({ variant = "nav" }: Props) {
-  if (variant === "hero") {
-    return (
-      <div>
-        <p className="font-alta text-sm uppercase tracking-[0.28em] text-white/80">
-          {site.shortName}
-        </p>
-        <p className="mt-1 font-heading text-2xl font-semibold tracking-tight">Recording Studios</p>
-      </div>
-    );
-  }
-
+export function SiteLogo() {
   return (
-    <Link href={"/" as Route} className="leading-tight text-brand-dark">
-      <span className="block font-alta text-[0.65rem] uppercase tracking-[0.22em] text-brand-green">
-        {site.shortName}
+    <Link href={"/" as Route} className="block text-white">
+      <span className="block whitespace-nowrap font-heading text-[1.35rem] font-normal leading-none tracking-[0.12em]">
+        GARDEN HOUSE
       </span>
-      <span className="block font-heading text-base font-semibold">Recording Studios</span>
+      <span className="mt-1.5 block whitespace-nowrap font-heading text-[0.55rem] font-normal uppercase leading-none tracking-[0.34em] text-white/90">
+        RECORDING STUDIOS
+      </span>
     </Link>
   );
 }
