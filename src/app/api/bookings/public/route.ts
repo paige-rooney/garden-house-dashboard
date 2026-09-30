@@ -72,13 +72,43 @@ export async function POST(request: NextRequest) {
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+    const when = startsAt.toLocaleString("en-US", {
+      timeZone: env.STUDIO_TIMEZONE,
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
     await sendTransactionalEmail({
       templateKey: "booking_requested",
       to: [parsed.data.guestEmail],
       subject: "Garden House booking request received",
-      text: `Thanks ${parsed.data.guestName}. We received your ${sessionType.name} request for ${startsAt.toISOString()}.`,
+      text: `Thanks ${parsed.data.guestName}. We received your ${sessionType.name} request for ${when}.`,
       dedupeKey: `booking-request-${data.id}`,
     });
+
+    const studioInbox = env.RESEND_CONTACT_TO;
+    if (studioInbox && studioInbox.toLowerCase() !== parsed.data.guestEmail.toLowerCase()) {
+      await sendTransactionalEmail({
+        templateKey: "booking_requested_studio",
+        to: [studioInbox],
+        subject: `New booking request: ${parsed.data.guestName}`,
+        text: [
+          "A new booking request was submitted on gardenhouserecordingstudios.com/book.",
+          "",
+          `Name: ${parsed.data.guestName}`,
+          `Email: ${parsed.data.guestEmail}`,
+          `Session: ${sessionType.name}`,
+          `When: ${when} (${env.STUDIO_TIMEZONE})`,
+          "",
+          "Confirm or cancel it on the Calendar tab in /admin.",
+        ].join("\n"),
+        dedupeKey: `booking-request-studio-${data.id}`,
+      });
+    }
 
     return NextResponse.json({ ok: true, id: data.id });
   } catch (error) {
