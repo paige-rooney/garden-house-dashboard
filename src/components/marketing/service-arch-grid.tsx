@@ -8,7 +8,7 @@ const ARCH_HEIGHT = "min-h-[19.5rem] sm:min-h-[21rem]";
 
 export function ServiceArchGrid() {
   return (
-    <ul className="mx-auto grid w-full justify-center gap-3 sm:gap-5 [grid-template-columns:repeat(4,minmax(0,13.5rem))]">
+    <ul className="mx-auto grid w-full justify-center justify-items-center gap-6 [grid-template-columns:minmax(0,13.5rem)] sm:[grid-template-columns:repeat(2,minmax(0,13.5rem))] sm:gap-5 lg:[grid-template-columns:repeat(4,minmax(0,13.5rem))]">
       {services.map((service, index) => (
         <ServiceArch key={service.name} service={service} index={index} />
       ))}
@@ -24,9 +24,11 @@ function ServiceArch({
   index: number;
 }) {
   const ref = useRef<HTMLLIElement>(null);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(index === 0);
 
   useEffect(() => {
+    if (index === 0) return;
+
     const el = ref.current;
     if (!el) return;
 
@@ -42,12 +44,24 @@ function ServiceArch({
         setVisible(true);
         observer.disconnect();
       },
-      { threshold: 0.18, rootMargin: "0px 0px -12% 0px" },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+
+    const frame = window.requestAnimationFrame(() => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 40 && rect.bottom > 80) {
+        setVisible(true);
+        observer.disconnect();
+      }
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [index]);
 
   return (
     <li
