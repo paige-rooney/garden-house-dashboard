@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ContactForm } from "@/components/marketing/contact-form";
 import { HeroSlideshow } from "@/components/marketing/hero-slideshow";
+import { InstagramIconLink } from "@/components/marketing/instagram-icon-link";
 import { PortfolioGrid } from "@/components/marketing/portfolio-grid";
 import { Section } from "@/components/marketing/section";
 import { ServiceArchGrid } from "@/components/marketing/service-arch-grid";
@@ -74,7 +75,10 @@ export default function Page() {
         </Section>
 
         <Section title="Get In Touch">
-          <p className="mb-4 font-sans text-sm text-brand-muted">Looking forward to connecting with you!</p>
+          <div className="mb-4 flex items-center gap-3">
+            <p className="font-sans text-sm text-brand-muted">Looking forward to connecting with you!</p>
+            <InstagramIconLink />
+          </div>
           <ContactForm />
         </Section>
       </main>

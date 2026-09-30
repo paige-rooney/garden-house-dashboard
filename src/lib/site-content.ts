@@ -14,8 +14,8 @@ export const site = {
 
 export const heroSlides = [
   {
-    src: "/hero/slide-session.jpg",
-    alt: "Artists tracking a session together at Garden House",
+    src: "/hero/slide-lounge.jpg",
+    alt: "A live tracking session in the Garden House lounge",
     objectPosition: "center",
   },
   {
@@ -24,8 +24,8 @@ export const heroSlides = [
     objectPosition: "center",
   },
   {
-    src: "/hero/slide-lounge.jpg",
-    alt: "A live tracking session in the Garden House lounge",
+    src: "/hero/slide-session.jpg",
+    alt: "Artists tracking a session together at Garden House",
     objectPosition: "center",
   },
   {
