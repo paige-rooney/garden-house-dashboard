@@ -42,7 +42,7 @@ export default function OurStoryPage() {
             <img
               src={ourStory.founder.image}
               alt={ourStory.founder.imageAlt}
-              width={682}
+              width={704}
               height={1024}
               className="h-auto w-full max-w-[16rem] shrink-0 rounded-xl object-cover md:w-[15rem] md:max-w-none"
             />
